@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PesoSenzaBilancia - Smart Kitchen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #fdfaf6; }
+        .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="card w-full max-w-md p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-orange-600">⚖️ PesoSenzaBilancia</h1>
+            <p class="text-gray-500 text-sm">Cucina con precisione, senza bilancia</p>
+        </header>
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cosa vuoi misurare?</label>
+                <select id="foodSelect" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
+                    </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quale utensile usi?</label>
+                <div class="grid grid-cols-3 gap-3" id="toolSelection">
+                    <button onclick="selectTool('cucchiaio')" id="btn-cucchiaio" class="tool-btn border-2 border-gray-100 p-3 rounded-xl flex flex-col items-center hover:bg-orange-50 transition">
+                        <span class="text-xl">🥄</span>
+                        <span class="text-xs mt-1">Cucchiaio</span>
+                    </button>
+                    <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="tool-btn border-2 border-gray-100 p-3 rounded-xl flex flex-col items-center hover:bg-orange-50 transition">
+                        <span class="text-lg">🥄</span>
+                        <span class="text-xs mt-1">Cucchiaino</span>
+                    </button>
+                    <button onclick="selectTool('tazzina')" id="btn-tazzina" class="tool-btn border-2 border-gray-100 p-3 rounded-xl flex flex-col items-center hover:bg-orange-50 transition">
+                        <span class="text-xl">☕</span>
+                        <span class="text-xs mt-1">Tazzina</span>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quante unità?</label>
+                <input type="number" id="quantity" value="1" min="1" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
+            </div>
+
+            <div class="bg-orange-50 p-6 rounded-2xl text-center border border-orange-100">
+                <span class="text-gray-600 block text-sm">Peso Stimato:</span>
+                <span id="result" class="text-4xl font-bold text-orange-600">0g</span>
+            </div>
+        </div>
+
+        <footer class="mt-8 text-center text-xs text-gray-400">
+            Ideale per le tue ricette quotidiane • © 2026
+        </footer>
+    </div>
+
+    <script>
+        // Database Alimenti (grammi per 1 unità di utensile)
+        const db = {
+            farina: { cucchiaio: 15, cucchiaino: 5, tazzina: 60 },
+            olio: { cucchiaio: 9, cucchiaino: 3, tazzina: 50 },
+            zucchero: { cucchiaio: 15, cucchiaino: 5, tazzina: 70 },
+            sale: { cucchiaio: 20, cucchiaino: 7, tazzina: 80 },
+            latte: { cucchiaio: 15, cucchiaino: 5, tazzina: 60 },
+            riso: { cucchiaio: 18, cucchiaino: 6, tazzina: 80 },
+            pasta_corta: { cucchiaio: 12, cucchiaino: 4, tazzina: 40 },
+            miele: { cucchiaio: 21, cucchiaino: 7, tazzina: 90 },
+            burro: { cucchiaio: 15, cucchiaino: 5, tazzina: 75 },
+            pangrattato: { cucchiaio: 12, cucchiaino: 4, tazzina: 50 }
+        };
+
+        let selectedTool = 'cucchiaio';
+
+        // Inizializzazione
+        const foodSelect = document.getElementById('foodSelect');
+        Object.keys(db).forEach(food => {
+            const option = document.createElement('option');
+            option.value = food;
+            option.textContent = food.charAt(0).toUpperCase() + food.slice(1).replace('_', ' ');
+            foodSelect.appendChild(option);
+        });
+
+        function selectTool(tool) {
+            selectedTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('border-orange-500', 'bg-orange-50'));
+            document.getElementById('btn-' + tool).classList.add('border-orange-500', 'bg-orange-50');
+            calculate();
+        }
+
+        function calculate() {
+            const food = foodSelect.value;
+            const qty = document.getElementById('quantity').value;
+            const unitWeight = db[food][selectedTool];
+            const total = unitWeight * qty;
+            document.getElementById('result').textContent = total + 'g';
+        }
+
+        // Listeners
+        foodSelect.addEventListener('change', calculate);
+        document.getElementById('quantity').addEventListener('input', calculate);
+        
+        // Primo avvio
+        selectTool('cucchiaio');
+    </script>
+</body>
+</html>
