@@ -227,14 +227,14 @@
                 </div>
                 <div id="aiResponseContainer" class="hidden">
                     <div id="aiLoading" class="hidden space-y-2"><div class="h-3 w-full loading-shimmer rounded"></div><div class="h-3 w-3/4 loading-shimmer rounded"></div></div>
-                    <div id="aiText" class="text-[13px] text-slate-700 leading-relaxed bg-white/50 p-4 rounded-2xl border border-white"></div>
+                    <div id="aiText" class="text-[13px] text-slate-700 leading-relaxed bg-white/50 p-4 rounded-2xl border border-white whitespace-pre-wrap"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; 
+        const apiKey = ""; // La chiave viene gestita dall'ambiente runtime
         const db = {
             farina: { icon: "🌾", name: "Farina", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal100g: 364 },
             olio: { icon: "🫒", name: "Olio d'oliva", weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal100g: 884 },
@@ -345,23 +345,60 @@
             }
         }
 
+        // Funzione helper per Exponential Backoff
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                } catch (err) {}
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            }
+            throw new Error("Impossibile connettersi all'IA dopo diversi tentativi.");
+        }
+
         async function askGemini(type) {
-            const container = document.getElementById('aiResponseContainer'), loading = document.getElementById('aiLoading'), textDiv = document.getElementById('aiText');
-            container.classList.remove('hidden'); loading.classList.remove('hidden'); textDiv.innerText = '';
+            const container = document.getElementById('aiResponseContainer'), 
+                  loading = document.getElementById('aiLoading'), 
+                  textDiv = document.getElementById('aiText');
             
+            container.classList.remove('hidden'); 
+            loading.classList.remove('hidden'); 
+            textDiv.innerText = '';
+            
+            // Estrai il valore numerico puro dal risultato attuale
+            const currentQuantity = mainResult.innerText.replace(/[a-zA-Z]/g, '').trim();
             const prompt = type === 'recipe' 
-                ? `Chef: Ho ${mainResult.innerText} di ${db[currentFoodKey].name}. Ricetta veloce (max 250 car).` 
-                : `Nutrizionista: Benefici di ${db[currentFoodKey].name} e abbinamento sano (max 250 car).`;
+                ? `Agisci come uno Chef. Ho ${currentQuantity}g di ${db[currentFoodKey].name}. Suggerisci una ricetta velocissima (max 250 caratteri).` 
+                : `Agisci come un Nutrizionista esperto. Dimmi i benefici di ${db[currentFoodKey].name} e un abbinamento sano considerando che ne sto usando ${currentQuantity}g (max 250 caratteri).`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "Rispondi in modo conciso, professionale e amichevole in lingua italiana." }] }
+            };
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
+                const response = await fetchWithRetry(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, 
+                    {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }
+                );
                 const data = await response.json();
+                const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
                 loading.classList.add('hidden');
-                textDiv.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Errore.";
-            } catch (e) { loading.classList.add('hidden'); textDiv.innerText = "Errore di connessione."; }
+                if (aiResponseText) {
+                    textDiv.innerText = aiResponseText;
+                } else {
+                    textDiv.innerText = "L'IA non ha generato una risposta valida.";
+                }
+            } catch (e) { 
+                loading.classList.add('hidden'); 
+                textDiv.innerText = "Spiacente, si è verificato un errore di connessione. Riprova tra poco."; 
+            }
         }
 
         mainInput.addEventListener('input', calculate);
