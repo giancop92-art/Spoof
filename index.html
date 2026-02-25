@@ -54,15 +54,16 @@
 
         .trivia-card {
             border: 2px dashed #e2e8f0;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
         }
-        .trivia-card.correct { border-color: #22c55e; background: #f0fdf4; }
-        .trivia-card.wrong { border-color: #ef4444; background: #fef2f2; }
+        .trivia-card.completed { opacity: 0.6; pointer-events: none; transform: scale(0.98); }
 
         #customSelectOptions {
             max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-out;
         }
         #customSelectOptions.open { max-height: 300px; opacity: 1; overflow-y: auto; }
+
+        .option-btn.selected { border-color: #6366f1; background-color: #eef2ff; }
     </style>
 </head>
 <body class="flex items-center justify-center p-4 sm:p-8">
@@ -75,7 +76,8 @@
                 <div id="rankContainer" class="relative group">
                     <div id="levelGlow" class="absolute inset-0 bg-amber-500/20 rounded-2xl blur-xl opacity-0 transition-opacity duration-500"></div>
                     <div class="w-20 h-20 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-4xl shadow-inner relative z-10 overflow-hidden">
-                        <img id="rankImage" src="https://img.icons8.com/fluency/96/cooking-pot.png" alt="Grado" class="w-14 h-14 object-contain">
+                        <!-- Icona App Principale Corretta -->
+                        <img id="rankImage" src="https://img.icons8.com/fluency/96/chef-hat.png" alt="Grado" class="w-14 h-14 object-contain">
                     </div>
                 </div>
                 <div class="flex-1">
@@ -123,7 +125,8 @@
                     <span class="text-[8px] font-800 uppercase">Cucchiaio</span>
                 </button>
                 <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="selectable-card flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-50">
-                    <img src="https://img.icons8.com/fluency/48/teaspoon.png" class="w-6 h-6 mb-1">
+                    <!-- Icona Cucchiaino Corretta -->
+                    <img src="https://img.icons8.com/fluency/48/tea-spoon.png" class="w-7 h-7 mb-1">
                     <span class="text-[8px] font-800 uppercase">Cucchiaino</span>
                 </button>
                 <button onclick="selectTool('tazzina')" id="btn-tazzina" class="selectable-card flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-50">
@@ -180,14 +183,25 @@
                 </div>
             </div>
 
-            <!-- Quiz & Sfida -->
-            <div id="triviaContainer" class="trivia-card p-4 rounded-[2rem] bg-slate-50">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[9px] font-900 text-indigo-600 uppercase tracking-widest">Quiz del Giorno</span>
-                    <span class="bg-indigo-100 text-indigo-600 text-[8px] px-2 py-0.5 rounded-full font-bold">+50 XP</span>
+            <!-- Quiz & Sfida Arricchito -->
+            <div id="triviaContainer" class="trivia-card p-5 rounded-[2rem] bg-slate-50 relative overflow-hidden">
+                <div id="triviaContent">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-900 text-indigo-600 uppercase tracking-widest">Quiz dello Chef</span>
+                        <span class="bg-indigo-100 text-indigo-600 text-[8px] px-2 py-0.5 rounded-full font-bold">+50 XP</span>
+                    </div>
+                    <p id="triviaQuestion" class="text-xs font-bold text-slate-700 mb-4 leading-snug"></p>
+                    <div id="triviaOptions" class="grid grid-cols-1 gap-2 mb-4"></div>
+                    <button id="confirmTriviaBtn" onclick="confirmTrivia()" class="w-full bg-indigo-600 text-white py-3 rounded-2xl text-[10px] font-900 uppercase tracking-widest shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                        Invia Risposta
+                    </button>
                 </div>
-                <p id="triviaQuestion" class="text-xs font-bold text-slate-700 mb-3 leading-snug"></p>
-                <div id="triviaOptions" class="grid grid-cols-1 gap-1.5"></div>
+                <!-- Feedback Overlay -->
+                <div id="triviaFeedback" class="hidden flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
+                    <div id="feedbackIcon" class="text-4xl mb-2"></div>
+                    <h4 id="feedbackTitle" class="text-sm font-900 uppercase tracking-tighter mb-1"></h4>
+                    <p id="feedbackText" class="text-[10px] text-slate-500 font-medium px-4"></p>
+                </div>
             </div>
         </div>
     </div>
@@ -212,15 +226,17 @@
         ];
 
         const triviaQuestions = [
-            { q: "Quante calorie fornisce 1g di grassi?", a: ["4 kcal", "7 kcal", "9 kcal"], c: 2 },
-            { q: "Qual è il macronutriente principale della farina?", a: ["Proteine", "Carboidrati", "Grassi"], c: 1 },
-            { q: "Quante calorie hanno 100g di sale?", a: ["0 kcal", "50 kcal", "10 kcal"], c: 0 },
-            { q: "Quale olio ha più calorie?", a: ["Oliva", "Girasole", "Tutti uguali"], c: 2 }
+            { q: "Quante calorie fornisce 1g di grassi?", a: ["4 kcal", "7 kcal", "9 kcal"], c: 2, e: "I grassi sono i macronutrienti più densi: 9 kcal per grammo." },
+            { q: "Qual è il macronutriente principale della farina?", a: ["Proteine", "Carboidrati", "Grassi"], c: 1, e: "La farina è composta principalmente da amidi (carboidrati complessi)." },
+            { q: "Quante calorie hanno 100g di sale?", a: ["0 kcal", "50 kcal", "10 kcal"], c: 0, e: "Il sale è un minerale e non fornisce energia calorica." },
+            { q: "Quale olio ha più calorie?", a: ["Oliva", "Girasole", "Tutti uguali"], c: 2, e: "Tutti i grassi puri hanno circa lo stesso apporto calorico: 9 kcal/g." }
         ];
 
         // State
         let userState = { xp: 0, level: 1, dailyTriviaDone: false };
         let currentMode = 'toWeight', currentTool = 'cucchiaio', currentFoodKey = 'farina';
+        let selectedTriviaOption = null;
+        let currentQuestionObj = null;
 
         function init() {
             const container = document.getElementById('customSelectOptions');
@@ -255,7 +271,8 @@
             const rIdx = Math.min(ranks.length - 1, Math.floor((userState.level - 1) / 2));
             const rank = ranks[rIdx];
             document.getElementById('rankTitle').textContent = rank.title;
-            document.getElementById('rankImage').src = rank.img;
+            // Nota: rankImage resta fisso se non vogliamo cambiare hat a ogni livello, 
+            // ma qui seguiamo la progressione del rankTitle.
         }
 
         function triggerLevelUp() {
@@ -307,7 +324,6 @@
                 document.getElementById('mainResult').textContent = units + 'u';
             }
 
-            // Calcolo Valori Nutrizionali
             const ratio = weightG / 100;
             const kcalTotal = Math.round(food.kcal * ratio);
             const carbsTotal = (food.c * ratio).toFixed(1);
@@ -316,39 +332,69 @@
 
             document.getElementById('kcalResult').textContent = kcalTotal + ' KCAL';
             
-            // Aggiornamento Dashboard
             document.getElementById('carbsValue').textContent = carbsTotal + 'g';
             document.getElementById('proteinValue').textContent = proteinTotal + 'g';
             document.getElementById('fatsValue').textContent = fatsTotal + 'g';
 
-            // Animazione barre (normalizzata su un ipotetico max di 100g per macro)
             document.getElementById('carbsBar').style.width = Math.min(100, (food.c)) + '%';
-            document.getElementById('proteinBar').style.width = Math.min(100, (food.p * 2)) + '%'; // Proteine pesano di più visivamente
+            document.getElementById('proteinBar').style.width = Math.min(100, (food.p * 2)) + '%'; 
             document.getElementById('fatsBar').style.width = Math.min(100, (food.f)) + '%';
         }
 
+        // Trivia Logic
         function loadDailyTrivia() {
-            const qObj = triviaQuestions[Math.floor(Math.random() * triviaQuestions.length)];
-            document.getElementById('triviaQuestion').textContent = qObj.q;
+            currentQuestionObj = triviaQuestions[Math.floor(Math.random() * triviaQuestions.length)];
+            document.getElementById('triviaQuestion').textContent = currentQuestionObj.q;
             const optCont = document.getElementById('triviaOptions');
             optCont.innerHTML = '';
             
-            qObj.a.forEach((ans, idx) => {
+            currentQuestionObj.a.forEach((ans, idx) => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left p-2.5 rounded-xl bg-white border border-slate-200 text-[10px] font-bold text-slate-600 hover:border-indigo-300 transition-all";
+                btn.className = "option-btn w-full text-left p-3 rounded-xl bg-white border border-slate-200 text-[11px] font-bold text-slate-600 hover:border-indigo-300 transition-all";
                 btn.textContent = ans;
                 btn.onclick = () => {
-                    if (userState.dailyTriviaDone) return;
-                    userState.dailyTriviaDone = true;
-                    if (idx === qObj.c) {
-                        btn.className = "w-full text-left p-2.5 rounded-xl bg-green-500 text-white text-[10px] font-bold border-none";
-                        addXP(50);
-                    } else {
-                        btn.className = "w-full text-left p-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold border-none";
-                    }
+                    selectedTriviaOption = idx;
+                    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
                 };
                 optCont.appendChild(btn);
             });
+        }
+
+        function confirmTrivia() {
+            if (selectedTriviaOption === null || userState.dailyTriviaDone) return;
+            
+            userState.dailyTriviaDone = true;
+            const content = document.getElementById('triviaContent');
+            const feedback = document.getElementById('triviaFeedback');
+            const fIcon = document.getElementById('feedbackIcon');
+            const fTitle = document.getElementById('feedbackTitle');
+            const fText = document.getElementById('feedbackText');
+            const container = document.getElementById('triviaContainer');
+
+            content.classList.add('hidden');
+            feedback.classList.remove('hidden');
+            feedback.classList.add('flex');
+
+            if (selectedTriviaOption === currentQuestionObj.c) {
+                fIcon.textContent = "⭐️";
+                fTitle.textContent = "Eccellente!";
+                fTitle.className = "text-sm font-900 uppercase tracking-tighter mb-1 text-green-600";
+                fText.textContent = "Risposta corretta. " + currentQuestionObj.e;
+                container.classList.add('bg-green-50', 'border-green-200');
+                addXP(50);
+            } else {
+                fIcon.textContent = "👨‍🍳";
+                fTitle.textContent = "Quasi Corretto...";
+                fTitle.className = "text-sm font-900 uppercase tracking-tighter mb-1 text-orange-500";
+                fText.innerHTML = `La risposta corretta era: <span class="font-bold text-slate-700">${currentQuestionObj.a[currentQuestionObj.c]}</span>.<br>${currentQuestionObj.e}`;
+                container.classList.add('bg-orange-50', 'border-orange-200');
+            }
+
+            // Svanisce dopo 6 secondi o resta come stato completato
+            setTimeout(() => {
+                container.classList.add('completed');
+            }, 6000);
         }
 
         document.getElementById('mainInput').addEventListener('input', calculate);
