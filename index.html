@@ -5,107 +5,490 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PesoSenzaBilancia - Smart Kitchen</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #fdfaf6; }
-        .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .selectable-card {
+            transition: all 0.2s ease;
+            border: 2px solid #f1f5f9;
+            background: white;
+        }
+
+        .selectable-card:hover {
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+        }
+
+        .selectable-card.active {
+            border-color: var(--primary);
+            background: #fffbeb;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
+
+        .display-unit {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .input-accent {
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .input-accent:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
+
+        #customSelectOptions {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.2s;
+            opacity: 0;
+        }
+
+        #customSelectOptions.open {
+            max-height: 300px;
+            opacity: 1;
+            overflow-y: auto;
+        }
+
+        .food-option {
+            transition: background 0.2s;
+        }
+
+        .food-option:hover {
+            background-color: #fff7ed;
+        }
+
+        .visual-tool-unit {
+            display: inline-block;
+            position: relative;
+            margin: 0 2px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .visual-tool-unit.half {
+            clip-path: inset(0 50% 0 0);
+            opacity: 0.7;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-result {
+            animation: popIn 0.3s ease-out forwards;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .ai-panel {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="flex items-center justify-center p-4 sm:p-8">
 
-    <div class="card w-full max-w-md p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-orange-600">⚖️ PesoSenzaBilancia</h1>
-            <p class="text-gray-500 text-sm">Cucina con precisione, senza bilancia</p>
-        </header>
-
-        <div class="space-y-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Cosa vuoi misurare?</label>
-                <select id="foodSelect" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
-                    </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Quale utensile usi?</label>
-                <div class="grid grid-cols-3 gap-3" id="toolSelection">
-                    <button onclick="selectTool('cucchiaio')" id="btn-cucchiaio" class="tool-btn border-2 border-gray-100 p-3 rounded-xl flex flex-col items-center hover:bg-orange-50 transition">
-                        <span class="text-xl">🥄</span>
-                        <span class="text-xs mt-1">Cucchiaio</span>
-                    </button>
-                    <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="tool-btn border-2 border-gray-100 p-3 rounded-xl flex flex-col items-center hover:bg-orange-50 transition">
-                        <span class="text-lg">🥄</span>
-                        <span class="text-xs mt-1">Cucchiaino</span>
-                    </button>
-                    <button onclick="selectTool('tazzina')" id="btn-tazzina" class="tool-btn border-2 border-gray-100 p-3 rounded-xl flex flex-col items-center hover:bg-orange-50 transition">
-                        <span class="text-xl">☕</span>
-                        <span class="text-xs mt-1">Tazzina</span>
-                    </button>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Quante unità?</label>
-                <input type="number" id="quantity" value="1" min="1" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
-            </div>
-
-            <div class="bg-orange-50 p-6 rounded-2xl text-center border border-orange-100">
-                <span class="text-gray-600 block text-sm">Peso Stimato:</span>
-                <span id="result" class="text-4xl font-bold text-orange-600">0g</span>
+    <div class="main-card w-full max-w-[440px] rounded-[2.5rem] overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-8 text-center relative">
+            <h1 class="text-2xl font-800 text-white tracking-tight uppercase italic mb-4">Smart Kitchen Scale</h1>
+            
+            <div class="inline-flex bg-black/10 backdrop-blur-md p-1 rounded-2xl w-full">
+                <button onclick="setMode('toWeight')" id="tab-toWeight" class="mode-btn active flex-1 py-2.5 text-[11px] font-bold uppercase rounded-xl text-amber-700">
+                    Strumento → Grammi
+                </button>
+                <button onclick="setMode('toTool')" id="tab-toTool" class="mode-btn flex-1 py-2.5 text-[11px] font-bold uppercase rounded-xl text-white/70">
+                    Grammi → Strumento
+                </button>
             </div>
         </div>
 
-        <footer class="mt-8 text-center text-xs text-gray-400">
-            Ideale per le tue ricette quotidiane • © 2026
-        </footer>
+        <div class="p-8 space-y-7">
+            <!-- 1. Alimento Section -->
+            <section class="relative">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="text-[11px] font-800 text-slate-400 uppercase tracking-widest">Alimento</label>
+                    <span class="bg-amber-100 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Visual Menu</span>
+                </div>
+                
+                <div class="relative">
+                    <div id="customSelectTrigger" onclick="toggleDropdown()" class="w-full bg-white border-2 border-slate-100 rounded-2xl px-5 py-4 text-slate-700 font-semibold flex items-center justify-between cursor-pointer hover:border-amber-200 transition-all">
+                        <div id="selectedFoodContent" class="flex items-center space-x-3">
+                            <span id="selectedIcon">🌾</span>
+                            <span id="selectedText">Farina</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+
+                    <div id="customSelectOptions" class="absolute z-50 w-full mt-2 bg-white border border-slate-100 shadow-xl rounded-2xl overflow-hidden">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Utensile Section -->
+            <section id="toolSection">
+                <label id="toolLabel" class="text-[11px] font-800 text-slate-400 uppercase tracking-widest block mb-3">Scegli lo Strumento</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="selectTool('cucchiaio')" id="btn-cucchiaio" class="selectable-card active p-4 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <span class="text-3xl">🥄</span>
+                        <span class="text-[11px] font-bold uppercase text-slate-600">Cucchiaio</span>
+                    </button>
+                    <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="selectable-card p-4 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <span class="text-2xl">🥄</span>
+                        <span class="text-[11px] font-bold uppercase text-slate-600">Cucchiaino</span>
+                    </button>
+                    <button onclick="selectTool('tazzina')" id="btn-tazzina" class="selectable-card p-4 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <span class="text-3xl">☕</span>
+                        <span class="text-[11px] font-bold uppercase text-slate-600">Tazzina</span>
+                    </button>
+                    <button onclick="selectTool('bicchiere')" id="btn-bicchiere" class="selectable-card p-4 rounded-2xl flex items-center space-x-4 shadow-sm">
+                        <span class="text-3xl">🥛</span>
+                        <span class="text-[11px] font-bold uppercase text-slate-600">Bicchiere</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2b. Taratura Section -->
+            <section id="levelSection" class="bg-slate-50/50 p-5 rounded-3xl border border-slate-100">
+                <label class="text-[10px] font-800 text-slate-400 uppercase tracking-widest block mb-3 text-center">Tipo di Riempimento</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="setLevel('raso')" id="btn-raso" class="level-button active bg-white border border-slate-200 py-3 rounded-xl text-[10px] font-bold uppercase shadow-sm">Raso</button>
+                    <button onclick="setLevel('colmo')" id="btn-colmo" class="level-button bg-white border border-slate-200 py-3 rounded-xl text-[10px] font-bold uppercase shadow-sm">Colmo</button>
+                    <button onclick="setLevel('strabordante')" id="btn-strabordante" class="level-button bg-white border border-slate-200 py-3 rounded-xl text-[10px] font-bold uppercase shadow-sm">Pieno</button>
+                </div>
+            </section>
+
+            <!-- 3. Input Quantità con layout simmetrico e label affiancata -->
+            <section>
+                <div class="flex items-center justify-between space-x-4 bg-white rounded-[1.5rem] p-3 border-2 border-slate-100 focus-within:border-amber-500 transition-all shadow-sm">
+                    <button onclick="adjustVal(-1)" class="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" /></svg>
+                    </button>
+                    
+                    <div class="flex-1 flex flex-col items-center">
+                        <label id="inputLabel" class="text-[9px] font-800 text-slate-400 uppercase tracking-widest mb-1 text-center">Quantità Unità</label>
+                        <input type="number" id="mainInput" value="1" class="w-full text-center text-3xl font-800 text-slate-800 bg-transparent border-none focus:ring-0 p-0" spellcheck="false">
+                    </div>
+
+                    <button onclick="adjustVal(1)" class="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 4. Display Risultato -->
+            <div class="display-unit rounded-[2.5rem] p-8 text-center relative overflow-hidden group">
+                <div id="resultLabel" class="text-[11px] font-700 uppercase tracking-[0.3em] text-slate-400 mb-2">Peso Calcolato</div>
+                
+                <div id="mainResult" class="text-6xl font-900 text-white tracking-tighter mb-4">0<span class="text-2xl text-amber-500 ml-1">g</span></div>
+                
+                <div id="visualToolsContainer" class="hidden flex flex-wrap justify-center gap-1 mb-4 animate-result">
+                </div>
+
+                <div class="h-[1px] w-12 bg-slate-700 mx-auto mb-3"></div>
+                <div id="subResult" class="text-amber-500 font-700 text-sm tracking-wide uppercase">~ 0 KCAL</div>
+            </div>
+
+            <!-- 5. Gemini AI Features -->
+            <div class="ai-panel rounded-3xl p-6 space-y-4 shadow-sm border border-blue-100">
+                <div class="flex items-center space-x-2">
+                    <span class="text-blue-600">✨</span>
+                    <h3 class="text-[12px] font-800 uppercase tracking-widest text-blue-800">Cucina Intelligente</h3>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="askGemini('recipe')" class="bg-white hover:bg-blue-50 text-blue-700 font-bold py-3 px-4 rounded-xl text-[10px] uppercase shadow-sm border border-blue-200 transition-all active:scale-95">
+                        Cosa Cucino? ✨
+                    </button>
+                    <button onclick="askGemini('nutrition')" class="bg-white hover:bg-blue-50 text-blue-700 font-bold py-3 px-4 rounded-xl text-[10px] uppercase shadow-sm border border-blue-200 transition-all active:scale-95">
+                        Valori Nutrizionali ✨
+                    </button>
+                </div>
+
+                <div id="aiResponseContainer" class="hidden animate-result">
+                    <div id="aiLoading" class="hidden space-y-2">
+                        <div class="h-3 w-full loading-shimmer rounded"></div>
+                        <div class="h-3 w-3/4 loading-shimmer rounded"></div>
+                    </div>
+                    <div id="aiText" class="text-[13px] text-slate-700 leading-relaxed bg-white/50 p-4 rounded-2xl border border-white">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Database Alimenti (grammi per 1 unità di utensile)
+        const apiKey = ""; 
         const db = {
-            farina: { cucchiaio: 15, cucchiaino: 5, tazzina: 60 },
-            olio: { cucchiaio: 9, cucchiaino: 3, tazzina: 50 },
-            zucchero: { cucchiaio: 15, cucchiaino: 5, tazzina: 70 },
-            sale: { cucchiaio: 20, cucchiaino: 7, tazzina: 80 },
-            latte: { cucchiaio: 15, cucchiaino: 5, tazzina: 60 },
-            riso: { cucchiaio: 18, cucchiaino: 6, tazzina: 80 },
-            pasta_corta: { cucchiaio: 12, cucchiaino: 4, tazzina: 40 },
-            miele: { cucchiaio: 21, cucchiaino: 7, tazzina: 90 },
-            burro: { cucchiaio: 15, cucchiaino: 5, tazzina: 75 },
-            pangrattato: { cucchiaio: 12, cucchiaino: 4, tazzina: 50 }
+            farina: { icon: "🌾", name: "Farina", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal100g: 364 },
+            olio: { icon: "🫒", name: "Olio d'oliva", weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal100g: 884 },
+            zucchero: { icon: "🍬", name: "Zucchero", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 }, kcal100g: 387 },
+            sale: { icon: "🧂", name: "Sale", weights: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250 }, kcal100g: 0 },
+            latte: { icon: "🥛", name: "Latte", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 70, bicchiere: 200 }, kcal100g: 42 },
+            riso: { icon: "🍚", name: "Riso", weights: { cucchiaio: 20, cucchiaino: 7, tazzina: 100, bicchiere: 170 }, kcal100g: 350 },
+            pasta_corta: { icon: "🍝", name: "Pasta Corta", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 50, bicchiere: 80 }, kcal100g: 350 },
+            miele: { icon: "🍯", name: "Miele", weights: { cucchiaio: 21, cucchiaino: 7, tazzina: 110, bicchiere: 280 }, kcal100g: 304 },
+            burro: { icon: "🧈", name: "Burro", weights: { cucchiaio: 14, cucchiaino: 5, tazzina: 90, bicchiere: 190 }, kcal100g: 717 },
+            pangrattato: { icon: "🍞", name: "Pangrattato", weights: { cucchiaio: 10, cucchiaino: 3, tazzina: 60, bicchiere: 100 }, kcal100g: 395 }
         };
 
-        let selectedTool = 'cucchiaio';
+        const multipliers = { raso: 1, colmo: 1.5, strabordante: 2 };
+        const toolIcons = { cucchiaio: "🥄", cucchiaino: "🥄", tazzina: "☕", bicchiere: "🥛" };
 
-        // Inizializzazione
-        const foodSelect = document.getElementById('foodSelect');
-        Object.keys(db).forEach(food => {
-            const option = document.createElement('option');
-            option.value = food;
-            option.textContent = food.charAt(0).toUpperCase() + food.slice(1).replace('_', ' ');
-            foodSelect.appendChild(option);
-        });
+        let currentMode = 'toWeight';
+        let currentTool = 'cucchiaio';
+        let currentLevel = 'raso';
+        let currentFoodKey = 'farina';
+        
+        const mainInput = document.getElementById('mainInput');
+        const mainResult = document.getElementById('mainResult');
+        const subResult = document.getElementById('subResult');
+        const toolLabel = document.getElementById('toolLabel');
+        const inputLabel = document.getElementById('inputLabel');
+        const resultLabel = document.getElementById('resultLabel');
+        const levelSection = document.getElementById('levelSection');
+        const customSelectOptions = document.getElementById('customSelectOptions');
+        const visualToolsContainer = document.getElementById('visualToolsContainer');
 
-        function selectTool(tool) {
-            selectedTool = tool;
-            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('border-orange-500', 'bg-orange-50'));
-            document.getElementById('btn-' + tool).classList.add('border-orange-500', 'bg-orange-50');
+        function init() {
+            Object.keys(db).forEach(key => {
+                const food = db[key];
+                const option = document.createElement('div');
+                option.className = "food-option px-5 py-3 flex items-center space-x-3 cursor-pointer border-b border-slate-50 last:border-none";
+                option.innerHTML = `<span>${food.icon}</span> <span class="text-sm font-semibold text-slate-700">${food.name}</span>`;
+                option.onclick = () => selectFood(key);
+                customSelectOptions.appendChild(option);
+            });
+            updateModeUI();
             calculate();
         }
 
-        function calculate() {
-            const food = foodSelect.value;
-            const qty = document.getElementById('quantity').value;
-            const unitWeight = db[food][selectedTool];
-            const total = unitWeight * qty;
-            document.getElementById('result').textContent = total + 'g';
+        function toggleDropdown() {
+            customSelectOptions.classList.toggle('open');
         }
 
-        // Listeners
-        foodSelect.addEventListener('change', calculate);
-        document.getElementById('quantity').addEventListener('input', calculate);
-        
-        // Primo avvio
+        function selectFood(key) {
+            currentFoodKey = key;
+            const food = db[key];
+            document.getElementById('selectedIcon').textContent = food.icon;
+            document.getElementById('selectedText').textContent = food.name;
+            customSelectOptions.classList.remove('open');
+            calculate();
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('#customSelectTrigger')) {
+                customSelectOptions.classList.remove('open');
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(t => {
+                t.classList.remove('active', 'text-white/70', 'text-amber-700');
+                if(t.id !== `tab-${mode}`) t.classList.add('text-white/70');
+            });
+            const activeBtn = document.getElementById(`tab-${mode}`);
+            activeBtn.classList.add('active', 'text-amber-700');
+            updateModeUI();
+            calculate();
+        }
+
+        function updateModeUI() {
+            if(currentMode === 'toWeight') {
+                toolLabel.textContent = "Scegli lo Strumento";
+                inputLabel.textContent = "Quantità Unità";
+                resultLabel.textContent = "Peso Calcolato";
+                mainInput.value = 1;
+                visualToolsContainer.classList.add('hidden');
+            } else {
+                toolLabel.textContent = "Converti In";
+                inputLabel.textContent = "Grammi desiderati";
+                resultLabel.textContent = "Dosaggio Stimato";
+                mainInput.value = 50;
+                visualToolsContainer.classList.remove('hidden');
+            }
+        }
+
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.selectable-card').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${tool}`).classList.add('active');
+            levelSection.classList.toggle('hidden', !(tool === 'cucchiaio' || tool === 'cucchiaino'));
+            calculate();
+        }
+
+        function setLevel(level) {
+            currentLevel = level;
+            document.querySelectorAll('.level-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${level}`).classList.add('active');
+            calculate();
+        }
+
+        function adjustVal(amount) {
+            let step = currentMode === 'toWeight' ? 1 : 10;
+            let val = parseFloat(mainInput.value) || 0;
+            val = Math.max(1, val + (amount * step));
+            mainInput.value = val;
+            calculate();
+        }
+
+        function renderVisualTools(total) {
+            visualToolsContainer.innerHTML = '';
+            const icon = toolIcons[currentTool];
+            const fullItems = Math.floor(total);
+            const hasHalf = (total - fullItems) >= 0.3 && (total - fullItems) < 0.8;
+            const needsExtraFull = (total - fullItems) >= 0.8;
+
+            let count = fullItems + (needsExtraFull ? 1 : 0);
+            
+            for(let i = 0; i < count; i++) {
+                const span = document.createElement('span');
+                span.className = "text-2xl visual-tool-unit";
+                span.textContent = icon;
+                visualToolsContainer.appendChild(span);
+            }
+
+            if(hasHalf) {
+                const span = document.createElement('span');
+                span.className = "text-2xl visual-tool-unit half";
+                span.textContent = icon;
+                visualToolsContainer.appendChild(span);
+            }
+
+            visualToolsContainer.classList.remove('animate-result');
+            void visualToolsContainer.offsetWidth; 
+            visualToolsContainer.classList.add('animate-result');
+        }
+
+        function calculate() {
+            const food = db[currentFoodKey];
+            const val = parseFloat(mainInput.value) || 0;
+            let multiplier = (currentTool === 'cucchiaio' || currentTool === 'cucchiaino') ? multipliers[currentLevel] : 1;
+            const unitWeight = food.weights[currentTool] * multiplier;
+
+            if (currentMode === 'toWeight') {
+                const grams = Math.round(unitWeight * val);
+                const kcal = Math.round((grams * food.kcal100g) / 100);
+                mainResult.innerHTML = `${grams}<span class="text-2xl text-amber-500 ml-1">g</span>`;
+                subResult.textContent = `~ ${kcal} KCAL`;
+                visualToolsContainer.classList.add('hidden');
+            } else {
+                const units = (val / unitWeight).toFixed(1);
+                mainResult.innerHTML = `${units}<span class="text-2xl text-amber-500 ml-1">PCS</span>`;
+                const kcal = Math.round((val * food.kcal100g) / 100);
+                subResult.textContent = `APPORTO: ~ ${kcal} KCAL`;
+                
+                visualToolsContainer.classList.remove('hidden');
+                renderVisualTools(parseFloat(units));
+            }
+        }
+
+        async function askGemini(type) {
+            const container = document.getElementById('aiResponseContainer');
+            const loading = document.getElementById('aiLoading');
+            const textDiv = document.getElementById('aiText');
+            const food = db[currentFoodKey].name;
+            const currentWeight = document.getElementById('mainResult').innerText.replace('g', '').replace('PCS', '');
+
+            container.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            textDiv.innerText = '';
+
+            let prompt = "";
+            if (type === 'recipe') {
+                prompt = `Agisci come uno chef creativo. Ho circa ${currentWeight}${currentMode === 'toWeight' ? 'g' : ' unità'} di ${food}. Suggerisci una ricetta veloce e deliziosa che usa questo ingrediente come protagonista. Sii conciso (massimo 300 caratteri) e usa un tono invitante.`;
+            } else {
+                prompt = `Agisci come un nutrizionista. Spiega brevemente i benefici nutrizionali di ${food} e suggerisci un abbinamento salutare per bilanciare un pasto che lo contiene. Sii conciso (massimo 300 caratteri).`;
+            }
+
+            try {
+                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: "Sei un assistente culinario integrato in un'app di pesatura domestica. Rispondi sempre in italiano." }] }
+                    })
+                });
+
+                const data = await response.json();
+                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Ops! Non sono riuscito a generare una risposta al momento.";
+                
+                loading.classList.add('hidden');
+                textDiv.innerText = aiResponse;
+            } catch (error) {
+                loading.classList.add('hidden');
+                textDiv.innerText = "Errore di connessione. Riprova tra poco.";
+                console.error(error);
+            }
+        }
+
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok && retries > 0) throw new Error(res.status);
+                return res;
+            } catch (err) {
+                if (retries <= 0) throw err;
+                await new Promise(resolve => setTimeout(resolve, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
+            }
+        }
+
+        mainInput.addEventListener('input', calculate);
+        init();
         selectTool('cucchiaio');
     </script>
 </body>
