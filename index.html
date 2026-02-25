@@ -234,7 +234,9 @@
     </div>
 
     <script>
-        const apiKey = ""; // La chiave viene gestita dall'ambiente runtime
+        // API Configuration - Utilizzo della chiave dell'ambiente
+        const apiKey = ""; 
+
         const db = {
             farina: { icon: "🌾", name: "Farina", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal100g: 364 },
             olio: { icon: "🫒", name: "Olio d'oliva", weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal100g: 884 },
@@ -345,16 +347,34 @@
             }
         }
 
-        // Funzione helper per Exponential Backoff
-        async function fetchWithRetry(url, options, maxRetries = 5) {
-            for (let i = 0; i < maxRetries; i++) {
+        // Funzione di chiamata AI con Exponential Backoff robusto
+        async function fetchGemini(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "Sei un assistente culinario esperto. Fornisci risposte brevissime, utili e creative in italiano. Max 200 caratteri." }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
                 try {
-                    const response = await fetch(url, options);
-                    if (response.ok) return response;
-                } catch (err) {}
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Nessun suggerimento disponibile.";
+                    }
+                } catch (err) {
+                    // Errore silenzioso per il backoff
+                }
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
             }
-            throw new Error("Impossibile connettersi all'IA dopo diversi tentativi.");
+            throw new Error("Connessione fallita.");
         }
 
         async function askGemini(type) {
@@ -366,43 +386,29 @@
             loading.classList.remove('hidden'); 
             textDiv.innerText = '';
             
-            // Estrai il valore numerico puro dal risultato attuale
-            const currentQuantity = mainResult.innerText.replace(/[a-zA-Z]/g, '').trim();
+            // Calcolo dati correnti per il prompt
+            const currentQuantity = mainResult.innerText.split('g')[0].trim() || mainResult.innerText.split('PCS')[0].trim();
+            const foodName = db[currentFoodKey].name;
+            
             const prompt = type === 'recipe' 
-                ? `Agisci come uno Chef. Ho ${currentQuantity}g di ${db[currentFoodKey].name}. Suggerisci una ricetta velocissima (max 250 caratteri).` 
-                : `Agisci come un Nutrizionista esperto. Dimmi i benefici di ${db[currentFoodKey].name} e un abbinamento sano considerando che ne sto usando ${currentQuantity}g (max 250 caratteri).`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: "Rispondi in modo conciso, professionale e amichevole in lingua italiana." }] }
-            };
+                ? `Dammi un'idea lampo per usare ${currentQuantity}g di ${foodName}.` 
+                : `Quali sono le proprietà principali di ${foodName} in questa quantità (${currentQuantity}g)?`;
 
             try {
-                const response = await fetchWithRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, 
-                    {
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    }
-                );
-                const data = await response.json();
-                const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                
+                const result = await fetchGemini(prompt);
                 loading.classList.add('hidden');
-                if (aiResponseText) {
-                    textDiv.innerText = aiResponseText;
-                } else {
-                    textDiv.innerText = "L'IA non ha generato una risposta valida.";
-                }
+                textDiv.innerText = result;
             } catch (e) { 
                 loading.classList.add('hidden'); 
-                textDiv.innerText = "Spiacente, si è verificato un errore di connessione. Riprova tra poco."; 
+                textDiv.innerText = "Spiacente, si è verificato un errore di connessione. Riprova più tardi."; 
             }
         }
 
         mainInput.addEventListener('input', calculate);
-        init(); selectTool('cucchiaio');
+        window.onload = () => {
+            init(); 
+            selectTool('cucchiaio');
+        };
     </script>
 </body>
 </html>
