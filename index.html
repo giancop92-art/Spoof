@@ -64,6 +64,14 @@
         #customSelectOptions.open { max-height: 300px; opacity: 1; overflow-y: auto; }
 
         .option-btn.selected { border-color: #6366f1; background-color: #eef2ff; }
+
+        .tool-indicator {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center p-4 sm:p-8">
@@ -76,7 +84,6 @@
                 <div id="rankContainer" class="relative group">
                     <div id="levelGlow" class="absolute inset-0 bg-amber-500/20 rounded-2xl blur-xl opacity-0 transition-opacity duration-500"></div>
                     <div class="w-20 h-20 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-4xl shadow-inner relative z-10 overflow-hidden">
-                        <!-- Icona App Principale Corretta -->
                         <img id="rankImage" src="https://img.icons8.com/fluency/96/chef-hat.png" alt="Grado" class="w-14 h-14 object-contain">
                     </div>
                 </div>
@@ -125,8 +132,8 @@
                     <span class="text-[8px] font-800 uppercase">Cucchiaio</span>
                 </button>
                 <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="selectable-card flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-50">
-                    <!-- Icona Cucchiaino Corretta -->
-                    <img src="https://img.icons8.com/fluency/48/tea-spoon.png" class="w-7 h-7 mb-1">
+                    <!-- Icona Cucchiaino Ottimizzata -->
+                    <img src="https://img.icons8.com/color/48/tea-spoon.png" class="w-8 h-8 mb-1 scale-110">
                     <span class="text-[8px] font-800 uppercase">Cucchiaino</span>
                 </button>
                 <button onclick="selectTool('tazzina')" id="btn-tazzina" class="selectable-card flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-50">
@@ -140,14 +147,29 @@
             </div>
 
             <!-- Input & Risultato Principale -->
-            <div class="flex items-center space-x-4">
-                <div class="flex-1 bg-slate-50 p-4 rounded-3xl border border-slate-100">
-                    <input type="number" id="mainInput" value="1" class="w-full text-center text-4xl font-900 text-slate-800 bg-transparent border-none focus:ring-0 p-0">
-                    <p id="inputLabel" class="text-[9px] font-800 text-slate-400 uppercase text-center mt-1 tracking-widest">Unità</p>
+            <div class="flex flex-col space-y-3">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-1 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                        <input type="number" id="mainInput" value="1" class="w-full text-center text-4xl font-900 text-slate-800 bg-transparent border-none focus:ring-0 p-0">
+                        <p id="inputLabel" class="text-[9px] font-800 text-slate-400 uppercase text-center mt-1 tracking-widest">Unità</p>
+                    </div>
+                    <div class="flex-1 bg-amber-500 p-4 rounded-3xl shadow-lg shadow-amber-200 text-white text-center">
+                        <div id="mainResult" class="text-4xl font-900 tracking-tighter">0g</div>
+                        <p id="kcalResult" class="text-[10px] font-800 text-white/90 uppercase tracking-widest mt-0.5">0 KCAL</p>
+                    </div>
                 </div>
-                <div class="flex-1 bg-amber-500 p-4 rounded-3xl shadow-lg shadow-amber-200 text-white text-center">
-                    <div id="mainResult" class="text-4xl font-900 tracking-tighter">0g</div>
-                    <p id="kcalResult" class="text-[10px] font-800 text-white/90 uppercase tracking-widest mt-0.5">0 KCAL</p>
+                
+                <!-- Helper Visuale Quantità (Riempi X Utensili) -->
+                <div id="quantityHelper" class="hidden bg-amber-50 border border-amber-100 p-3 rounded-2xl tool-indicator">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-white p-2 rounded-xl shadow-sm">
+                            <img id="helperIcon" src="" class="w-6 h-6 object-contain">
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-800 text-amber-800 uppercase tracking-wider leading-none mb-1">Suggerimento Chef</p>
+                            <p id="helperText" class="text-xs font-bold text-slate-700"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -183,7 +205,7 @@
                 </div>
             </div>
 
-            <!-- Quiz & Sfida Arricchito -->
+            <!-- Quiz & Sfida -->
             <div id="triviaContainer" class="trivia-card p-5 rounded-[2rem] bg-slate-50 relative overflow-hidden">
                 <div id="triviaContent">
                     <div class="flex justify-between items-center mb-3">
@@ -207,7 +229,6 @@
     </div>
 
     <script>
-        // Database Arricchito con Macronutrienti (per 100g)
         const db = {
             farina: { icon: "🌾", name: "Farina", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal: 364, c: 76, p: 10, f: 1 },
             olio: { icon: "🫒", name: "Olio", weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal: 884, c: 0, p: 0, f: 99 },
@@ -215,6 +236,13 @@
             sale: { icon: "🧂", name: "Sale", weights: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250 }, kcal: 0, c: 0, p: 0, f: 0 },
             latte: { icon: "🥛", name: "Latte", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 70, bicchiere: 200 }, kcal: 42, c: 5, p: 3.4, f: 1.6 },
             riso: { icon: "🍚", name: "Riso", weights: { cucchiaio: 18, cucchiaino: 6, tazzina: 85, bicchiere: 160 }, kcal: 360, c: 80, p: 7, f: 0.6 }
+        };
+
+        const toolIcons = {
+            cucchiaio: "https://img.icons8.com/fluency/48/spoon.png",
+            cucchiaino: "https://img.icons8.com/color/48/tea-spoon.png",
+            tazzina: "https://img.icons8.com/emoji/48/hot-beverage-emoji.png",
+            bicchiere: "https://img.icons8.com/fluency/48/glass-of-milk.png"
         };
 
         const ranks = [
@@ -232,7 +260,6 @@
             { q: "Quale olio ha più calorie?", a: ["Oliva", "Girasole", "Tutti uguali"], c: 2, e: "Tutti i grassi puri hanno circa lo stesso apporto calorico: 9 kcal/g." }
         ];
 
-        // State
         let userState = { xp: 0, level: 1, dailyTriviaDone: false };
         let currentMode = 'toWeight', currentTool = 'cucchiaio', currentFoodKey = 'farina';
         let selectedTriviaOption = null;
@@ -252,7 +279,6 @@
             calculate();
         }
 
-        // Gamification Logic
         function addXP(amount) {
             userState.xp += amount;
             if (userState.xp >= 100) {
@@ -267,12 +293,8 @@
             document.getElementById('xpBar').style.width = userState.xp + '%';
             document.getElementById('xpLabel').textContent = `${userState.xp}/100 XP`;
             document.getElementById('levelLabel').textContent = userState.level;
-            
             const rIdx = Math.min(ranks.length - 1, Math.floor((userState.level - 1) / 2));
-            const rank = ranks[rIdx];
-            document.getElementById('rankTitle').textContent = rank.title;
-            // Nota: rankImage resta fisso se non vogliamo cambiare hat a ogni livello, 
-            // ma qui seguiamo la progressione del rankTitle.
+            document.getElementById('rankTitle').textContent = ranks[rIdx].title;
         }
 
         function triggerLevelUp() {
@@ -285,7 +307,6 @@
             }, 3000);
         }
 
-        // Calculation Logic
         function toggleDropdown() { document.getElementById('customSelectOptions').classList.toggle('open'); }
         
         function selectFood(key) {
@@ -300,6 +321,7 @@
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.id === `tab-${mode}`));
+            document.getElementById('inputLabel').textContent = mode === 'toWeight' ? 'Unità' : 'Grammi';
             calculate();
         }
 
@@ -311,43 +333,51 @@
 
         function calculate() {
             const food = db[currentFoodKey];
-            const val = parseFloat(document.getElementById('mainInput').value) || 0;
-            const uw = food.weights[currentTool];
+            const inputVal = parseFloat(document.getElementById('mainInput').value) || 0;
+            const unitWeight = food.weights[currentTool];
+            const helper = document.getElementById('quantityHelper');
 
             let weightG = 0;
             if (currentMode === 'toWeight') {
-                weightG = Math.round(uw * val);
+                weightG = Math.round(unitWeight * inputVal);
                 document.getElementById('mainResult').textContent = weightG + 'g';
+                helper.classList.add('hidden');
             } else {
-                weightG = val;
-                const units = (val / uw).toFixed(1);
+                weightG = inputVal;
+                const units = (inputVal / unitWeight).toFixed(1);
                 document.getElementById('mainResult').textContent = units + 'u';
+                
+                // Mostra aiuto visuale per riempire gli utensili
+                helper.classList.remove('hidden');
+                document.getElementById('helperIcon').src = toolIcons[currentTool];
+                
+                const integerPart = Math.floor(units);
+                const decimalPart = units - integerPart;
+                let description = `Riempi **${integerPart}** ${currentTool}${integerPart !== 1 ? (currentTool.endsWith('a') ? 'e' : 'i') : ''}`;
+                
+                if (decimalPart >= 0.8) description = `Riempi quasi **${integerPart + 1}** ${currentTool}${integerPart + 1 !== 1 ? (currentTool.endsWith('a') ? 'e' : 'i') : ''}`;
+                else if (decimalPart >= 0.4) description += ` e **metà** di un altro.`;
+                else if (decimalPart > 0) description += ` e un **pizzico**.`;
+                else description += ` esatti.`;
+
+                document.getElementById('helperText').innerHTML = description.replace(/\*\*(.*?)\*\*/g, '<span class="text-amber-600 font-900">$1</span>');
             }
 
             const ratio = weightG / 100;
-            const kcalTotal = Math.round(food.kcal * ratio);
-            const carbsTotal = (food.c * ratio).toFixed(1);
-            const proteinTotal = (food.p * ratio).toFixed(1);
-            const fatsTotal = (food.f * ratio).toFixed(1);
-
-            document.getElementById('kcalResult').textContent = kcalTotal + ' KCAL';
-            
-            document.getElementById('carbsValue').textContent = carbsTotal + 'g';
-            document.getElementById('proteinValue').textContent = proteinTotal + 'g';
-            document.getElementById('fatsValue').textContent = fatsTotal + 'g';
-
+            document.getElementById('kcalResult').textContent = Math.round(food.kcal * ratio) + ' KCAL';
+            document.getElementById('carbsValue').textContent = (food.c * ratio).toFixed(1) + 'g';
+            document.getElementById('proteinValue').textContent = (food.p * ratio).toFixed(1) + 'g';
+            document.getElementById('fatsValue').textContent = (food.f * ratio).toFixed(1) + 'g';
             document.getElementById('carbsBar').style.width = Math.min(100, (food.c)) + '%';
             document.getElementById('proteinBar').style.width = Math.min(100, (food.p * 2)) + '%'; 
             document.getElementById('fatsBar').style.width = Math.min(100, (food.f)) + '%';
         }
 
-        // Trivia Logic
         function loadDailyTrivia() {
             currentQuestionObj = triviaQuestions[Math.floor(Math.random() * triviaQuestions.length)];
             document.getElementById('triviaQuestion').textContent = currentQuestionObj.q;
             const optCont = document.getElementById('triviaOptions');
             optCont.innerHTML = '';
-            
             currentQuestionObj.a.forEach((ans, idx) => {
                 const btn = document.createElement('button');
                 btn.className = "option-btn w-full text-left p-3 rounded-xl bg-white border border-slate-200 text-[11px] font-bold text-slate-600 hover:border-indigo-300 transition-all";
@@ -363,7 +393,6 @@
 
         function confirmTrivia() {
             if (selectedTriviaOption === null || userState.dailyTriviaDone) return;
-            
             userState.dailyTriviaDone = true;
             const content = document.getElementById('triviaContent');
             const feedback = document.getElementById('triviaFeedback');
@@ -390,11 +419,7 @@
                 fText.innerHTML = `La risposta corretta era: <span class="font-bold text-slate-700">${currentQuestionObj.a[currentQuestionObj.c]}</span>.<br>${currentQuestionObj.e}`;
                 container.classList.add('bg-orange-50', 'border-orange-200');
             }
-
-            // Svanisce dopo 6 secondi o resta come stato completato
-            setTimeout(() => {
-                container.classList.add('completed');
-            }, 6000);
+            setTimeout(() => { container.classList.add('completed'); }, 6000);
         }
 
         document.getElementById('mainInput').addEventListener('input', calculate);
