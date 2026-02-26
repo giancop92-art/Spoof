@@ -4,173 +4,198 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#f59e0b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-
     <title>PesoSenzaBilancia - Chef Academy</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-        :root {
-            --primary: #f59e0b;
-            --primary-dark: #d97706;
-            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg-gradient);
-            color: #1e293b;
-            min-height: 100vh;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .main-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        }
-
-        .chef-card {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        }
-
-        .xp-bar-inner { transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-        .mode-btn.active { background: white; color: var(--primary-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-
-        /* Classi corrette per i pesi font in Tailwind CDN */
-        .font-black { font-weight: 900; }
-
-        .selectable-card { transition: all 0.2s ease; border: 2px solid #f8fafc; }
-        .selectable-card.active { border-color: var(--primary); background: #fffbeb; transform: scale(1.05); }
-
-        #customSelectOptions {
-            max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-out;
-        }
-        #customSelectOptions.open { max-height: 400px; opacity: 1; overflow-y: auto; }
-
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); min-height: 100vh; user-select: none; }
+        .main-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); }
+        .chef-card { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .mode-btn.active { background: white; color: #d97706; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .selectable-card { border: 2px solid #f8fafc; transition: all 0.2s; }
+        .selectable-card.active { border-color: #f59e0b; background: #fffbeb; transform: scale(1.05); }
+        #customSelectOptions { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-out; }
+        #customSelectOptions.open { max-height: 400px; opacity: 1; overflow-y: auto; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body class="flex items-center justify-center p-4">
 
-    <div class="main-card w-full max-w-[460px] rounded-[2.5rem] overflow-hidden relative">
-
-        <div class="chef-card p-6 text-white">
+    <div class="main-card w-full max-w-[460px] rounded-[2.5rem] overflow-hidden shadow-2xl">
+        
+        <div class="chef-card p-6 text-white text-center">
             <div class="flex items-center space-x-4">
-                <div id="rankContainer" class="relative">
-                    <div id="levelGlow" class="absolute inset-0 bg-amber-500/20 rounded-2xl blur-xl opacity-0"></div>
-                    <div class="w-16 h-16 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-3xl shadow-inner relative z-10">
-                        <span id="rankEmoji">👨‍🍳</span>
-                    </div>
+                <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center border border-white/10">
+                    <img src="chef-hat.png" class="w-10 h-10 object-contain" alt="Chef">
                 </div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-end mb-1">
-                        <div>
-                            <h2 id="rankTitle" class="text-lg font-black text-amber-500 leading-none uppercase">AIUTO CUOCO</h2>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Livello <span id="levelLabel">1</span></p>
-                        </div>
-                        <span id="xpLabel" class="text-[10px] font-black text-slate-500">0/100 XP</span>
-                    </div>
-                    <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div id="xpBar" class="xp-bar-inner h-full bg-gradient-to-r from-amber-500 to-orange-400 w-0"></div>
+                <div class="text-left">
+                    <h2 id="rankTitle" class="text-lg font-extrabold text-amber-500 uppercase">AIUTO CUOCO</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Livello <span id="levelLabel">1</span> • <span id="xpLabel">0/100 XP</span></p>
+                    <div class="w-32 bg-slate-800 h-1.5 rounded-full mt-1 overflow-hidden">
+                        <div id="xpBar" class="h-full bg-amber-500 w-0 transition-all duration-500"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="bg-white p-6 pb-2">
-            <div class="inline-flex bg-slate-100 p-1 rounded-2xl w-full mb-4">
-                <button onclick="setMode('toWeight')" id="tab-toWeight" class="mode-btn active flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all">
-                    Utensile → Grammi
-                </button>
-                <button onclick="setMode('toTool')" id="tab-toTool" class="mode-btn flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all">
-                    Grammi → Utensile
-                </button>
+            <div class="flex bg-slate-100 p-1 rounded-2xl mb-4">
+                <button onclick="setMode('toWeight')" id="tab-toWeight" class="mode-btn active flex-1 py-3 text-[10px] font-extrabold uppercase rounded-xl">Utensile → Grammi</button>
+                <button onclick="setMode('toTool')" id="tab-toTool" class="mode-btn flex-1 py-3 text-[10px] font-extrabold uppercase rounded-xl">Grammi → Utensile</button>
             </div>
 
-            <div onclick="toggleDropdown()" class="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-5 py-4 flex items-center justify-between cursor-pointer hover:border-amber-200 transition-all mb-4">
+            <div onclick="toggleDropdown()" class="bg-slate-50 rounded-2xl px-5 py-4 flex items-center justify-between cursor-pointer border-2 border-transparent hover:border-amber-200 transition-all">
                 <div class="flex items-center space-x-3">
-                    <span id="selectedIcon" class="text-2xl">🌾</span>
+                    <img id="selectedIcon" src="flour.png" class="w-6 h-6 object-contain">
                     <span id="selectedText" class="font-bold text-slate-700">Farina</span>
                 </div>
-                <span class="text-slate-300">▼</span>
+                <span class="text-slate-300 text-xs">▼</span>
             </div>
-            <div id="customSelectOptions" class="absolute z-50 left-6 right-6 bg-white border border-slate-100 shadow-2xl rounded-2xl"></div>
+            <div id="customSelectOptions" class="absolute z-50 left-6 right-6 bg-white shadow-xl rounded-2xl mt-1"></div>
         </div>
 
         <div class="p-6 pt-0 space-y-4">
             <div class="grid grid-cols-4 gap-2">
                 <button onclick="selectTool('cucchiaio')" id="btn-cucchiaio" class="selectable-card active flex flex-col items-center p-3 rounded-2xl">
-                    <img src="spoon.png" alt="Cucchiaio" class="w-8 h-8 mb-1 object-contain">
-                    <span class="text-[8px] font-black uppercase">Cucchiaio</span>
+                    <img src="spoon.png" class="w-8 h-8 mb-1 object-contain">
+                    <span class="text-[8px] font-extrabold uppercase">Cucchiaio</span>
                 </button>
                 <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="selectable-card flex flex-col items-center p-3 rounded-2xl">
-                    <img src="teaspoon.png" alt="Cucchiaino" class="w-8 h-8 mb-1 object-contain">
-                    <span class="text-[8px] font-black uppercase">Cucchiaino</span>
+                    <img src="teaspoon.png" class="w-8 h-8 mb-1 object-contain">
+                    <span class="text-[8px] font-extrabold uppercase">Cucchiaino</span>
                 </button>
                 <button onclick="selectTool('tazzina')" id="btn-tazzina" class="selectable-card flex flex-col items-center p-3 rounded-2xl">
-                    <span class="text-2xl mb-1">☕</span>
-                    <span class="text-[8px] font-black uppercase">Tazzina</span>
+                    <img src="mug.png" class="w-8 h-8 mb-1 object-contain">
+                    <span class="text-[8px] font-extrabold uppercase">Tazzina</span>
                 </button>
                 <button onclick="selectTool('bicchiere')" id="btn-bicchiere" class="selectable-card flex flex-col items-center p-3 rounded-2xl">
-                    <span class="text-2xl mb-1">🥛</span>
-                    <span class="text-[8px] font-black uppercase">Bicchiere</span>
+                    <img src="glass.png" class="w-8 h-8 mb-1 object-contain">
+                    <span class="text-[8px] font-extrabold uppercase">Bicchiere</span>
                 </button>
             </div>
 
-            <div class="space-y-3">
-                <div class="flex items-center space-x-3">
-                    <div class="flex-1 bg-slate-50 p-4 rounded-3xl border border-slate-100">
-                        <input type="number" id="mainInput" value="1" class="w-full text-center text-4xl font-black text-slate-800 bg-transparent border-none focus:ring-0">
-                        <p id="inputLabel" class="text-[9px] font-black text-slate-400 uppercase text-center mt-1">Unità</p>
-                    </div>
-                    <div class="flex-1 bg-amber-500 p-4 rounded-3xl shadow-lg text-white text-center">
-                        <div id="mainResult" class="text-4xl font-black">0g</div>
-                        <p id="kcalResult" class="text-[10px] font-bold opacity-90 uppercase mt-0.5">0 KCAL</p>
-                    </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex-1 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                    <input type="number" id="mainInput" value="1" class="w-full text-center text-4xl font-extrabold text-slate-800 bg-transparent border-none focus:ring-0">
+                    <p id="inputLabel" class="text-[9px] font-bold text-slate-400 uppercase text-center mt-1">Unità</p>
                 </div>
-
-                <div id="quantityHelper" class="hidden bg-amber-50 border border-amber-100 p-4 rounded-2xl">
-                    <p id="helperText" class="text-xs font-bold text-slate-700 text-center"></p>
+                <div class="flex-1 bg-amber-500 p-4 rounded-3xl shadow-lg text-white text-center">
+                    <div id="mainResult" class="text-4xl font-extrabold">0g</div>
+                    <p id="kcalResult" class="text-[10px] font-bold opacity-90">0 KCAL</p>
                 </div>
             </div>
 
             <div class="bg-slate-900 rounded-[2rem] p-5 text-white">
                 <div class="grid grid-cols-3 gap-4">
                     <div class="text-center">
-                        <div id="carbsValue" class="text-lg font-black">0g</div>
-                        <p class="text-[8px] text-slate-500 uppercase font-bold mt-1">Carbi</p>
-                        <div class="w-full bg-slate-800 h-1 mt-2 rounded-full"><div id="carbsBar" class="h-full bg-blue-400 w-0 transition-all"></div></div>
+                        <div id="carbsValue" class="text-lg font-extrabold">0g</div>
+                        <p class="text-[8px] text-slate-500 uppercase font-bold">Carbi</p>
+                        <div class="w-full bg-slate-800 h-1 mt-2 rounded-full"><div id="carbsBar" class="h-full bg-blue-400 w-0"></div></div>
                     </div>
                     <div class="text-center">
-                        <div id="proteinValue" class="text-lg font-black">0g</div>
-                        <p class="text-[8px] text-slate-500 uppercase font-bold mt-1">Proteine</p>
-                        <div class="w-full bg-slate-800 h-1 mt-2 rounded-full"><div id="proteinBar" class="h-full bg-red-400 w-0 transition-all"></div></div>
+                        <div id="proteinValue" class="text-lg font-extrabold">0g</div>
+                        <p class="text-[8px] text-slate-500 uppercase font-bold">Proteine</p>
+                        <div class="w-full bg-slate-800 h-1 mt-2 rounded-full"><div id="proteinBar" class="h-full bg-red-400 w-0"></div></div>
                     </div>
                     <div class="text-center">
-                        <div id="fatsValue" class="text-lg font-black">0g</div>
-                        <p class="text-[8px] text-slate-500 uppercase font-bold mt-1">Grassi</p>
-                        <div class="w-full bg-slate-800 h-1 mt-2 rounded-full"><div id="fatsBar" class="h-full bg-yellow-400 w-0 transition-all"></div></div>
+                        <div id="fatsValue" class="text-lg font-extrabold">0g</div>
+                        <p class="text-[8px] text-slate-500 uppercase font-bold">Grassi</p>
+                        <div class="w-full bg-slate-800 h-1 mt-2 rounded-full"><div id="fatsBar" class="h-full bg-yellow-400 w-0"></div></div>
                     </div>
                 </div>
             </div>
-            
-            <button id="installBtn" class="hidden w-full bg-slate-800 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">Installa Chef App</button>
+
+            <button id="installBtn" class="hidden w-full bg-slate-800 text-white py-4 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest">Installa App</button>
         </div>
     </div>
 
     <script>
-        // Database Alimenti
         const db = {
-            farina: { icon: "🌾", name: "Farina", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal: 364, c: 76, p: 10, f: 1 },
-            olio: { icon: "🫒", name: "Olio", weights: { cucchiaio: 9, cucchiaino: 3, tazzina:
+            farina: { img: "flour.png", name: "Farina", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal: 364, c: 76, p: 10, f: 1 },
+            olio: { img: "oil.png", name: "Olio", weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal: 884, c: 0, p: 0, f: 99 },
+            zucchero: { img: "sugar.png", name: "Zucchero", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 }, kcal: 387, c: 100, p: 0, f: 0 },
+            sale: { img: "salt.png", name: "Sale", weights: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250 }, kcal: 0, c: 0, p: 0, f: 0 },
+            aceto: { img: "vinegar.png", name: "Aceto", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 70, bicchiere: 200 }, kcal: 18, c: 0.6, p: 0, f: 0 },
+            limone: { img: "lemon.png", name: "Limone", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 70, bicchiere: 200 }, kcal: 29, c: 9, p: 1.1, f: 0.3 }
+        };
+
+        let state = { xp: 0, level: 1, mode: 'toWeight', tool: 'cucchiaio', food: 'farina' };
+
+        function init() {
+            const container = document.getElementById('customSelectOptions');
+            if(!container) return;
+            Object.keys(db).forEach(key => {
+                const div = document.createElement('div');
+                div.className = "px-6 py-4 flex items-center space-x-3 cursor-pointer border-b border-slate-50 hover:bg-slate-50";
+                div.innerHTML = `<img src="${db[key].img}" class="w-5 h-5 object-contain"> <span class="text-sm font-bold">${db[key].name}</span>`;
+                div.onclick = () => selectFood(key);
+                container.appendChild(div);
+            });
+            calculate();
+        }
+
+        function toggleDropdown() { document.getElementById('customSelectOptions').classList.toggle('open'); }
+
+        function selectFood(key) {
+            state.food = key;
+            document.getElementById('selectedIcon').src = db[key].img;
+            document.getElementById('selectedText').textContent = db[key].name;
+            toggleDropdown();
+            addXP(5);
+            calculate();
+        }
+
+        function setMode(m) {
+            state.mode = m;
+            document.getElementById('tab-toWeight').classList.toggle('active', m === 'toWeight');
+            document.getElementById('tab-toTool').classList.toggle('active', m === 'toTool');
+            document.getElementById('inputLabel').textContent = m === 'toWeight' ? 'Unità' : 'Grammi';
+            calculate();
+        }
+
+        function selectTool(t) {
+            state.tool = t;
+            document.querySelectorAll('.selectable-card').forEach(btn => btn.classList.toggle('active', btn.id === `btn-${t}`));
+            calculate();
+        }
+
+        function calculate() {
+            const food = db[state.food];
+            const val = Math.max(0, parseFloat(document.getElementById('mainInput').value) || 0);
+            const unitW = food.weights[state.tool];
+            let weightG = state.mode === 'toWeight' ? Math.round(val * unitW) : val;
+            
+            if (state.mode === 'toWeight') {
+                document.getElementById('mainResult').textContent = weightG + 'g';
+            } else {
+                document.getElementById('mainResult').textContent = (val / unitW).toFixed(1) + 'u';
+            }
+
+            const r = weightG / 100;
+            document.getElementById('kcalResult').textContent = Math.round(food.kcal * r) + ' KCAL';
+            document.getElementById('carbsValue').textContent = (food.c * r).toFixed(1) + 'g';
+            document.getElementById('proteinValue').textContent = (food.p * r).toFixed(1) + 'g';
+            document.getElementById('fatsValue').textContent = (food.f * r).toFixed(1) + 'g';
+            document.getElementById('carbsBar').style.width = Math.min(100, food.c) + '%';
+            document.getElementById('proteinBar').style.width = Math.min(100, food.p * 5) + '%';
+            document.getElementById('fatsBar').style.width = Math.min(100, food.f) + '%';
+        }
+
+        function addXP(n) {
+            state.xp += n;
+            if (state.xp >= 100) { state.xp = 0; state.level++; }
+            document.getElementById('xpBar').style.width = state.xp + '%';
+            document.getElementById('xpLabel').textContent = state.xp + '/100 XP';
+            document.getElementById('levelLabel').textContent = state.level;
+        }
+
+        document.getElementById('mainInput').addEventListener('input', calculate);
+        window.onload = init;
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
