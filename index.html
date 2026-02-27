@@ -3,232 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <!-- PWA / Theming -->
   <meta name="theme-color" content="#0f172a" />
   <meta name="description" content="Converti i grammi in unità senza bilancia." />
   <link rel="manifest" href="./manifest.json" />
-
-  <!-- iOS (installazione “Aggiungi a Home”) -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="apple-touch-icon" href="./icon-192.png" />
-
   <title>Chef Academy - Peso Senza Bilancia</title>
-
-  <!-- Fonts (più pulito e veloce) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
-
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #ffffff;
-      color: #1e293b;
-      /* Nota: touch-action:none blocca diversi gesti/scroll.
-         Lo lascio perché fa parte della tua UX “app-like”. */
-      touch-action: none;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    /* Cestino */
-    #trash-zone {
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      transform: translateY(-100%);
-      opacity: 0;
-      z-index: 100;
-    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #ffffff; color: #1e293b; touch-action: none; overflow: hidden; user-select: none; }
+    #trash-zone { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(-100%); opacity: 0; z-index: 100; }
     #trash-zone.active { transform: translateY(0); opacity: 1; }
     #trash-zone.hover  { background: #fee2e2; transform: scale(1.05); border-color: #ef4444; color: #ef4444; }
     .shake { animation: shake 0.4s ease-in-out; }
-    @keyframes shake {
-      0%, 100% { transform: translateY(0); }
-      25% { transform: translateY(5px) rotate(2deg); }
-      75% { transform: translateY(5px) rotate(-2deg); }
-    }
-
-    /* Animazione Volo */
-    .fly-save {
-      position: absolute;
-      animation: flyUp 0.6s ease-out forwards;
-      color: #f59e0b;
-      font-weight: 800;
-      pointer-events: none;
-      z-index: 150;
-    }
-    @keyframes flyUp {
-      0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(-50%, -150px) scale(2); opacity: 0; }
-    }
-
-    /* Ruler */
-    .ruler-container {
-      position: relative;
-      width: 100%;
-      height: 100px;
-      overflow: hidden;
-      cursor: grab;
-      background: #f8fafc;
-      border-top: 1px solid #f1f5f9;
-    }
-    .ruler-track {
-      display: flex;
-      align-items: flex-end;
-      height: 100%;
-      position: absolute;
-      left: 50%;
-      will-change: transform;
-    }
+    @keyframes shake { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(5px) rotate(2deg); } 75% { transform: translateY(5px) rotate(-2deg); } }
+    .fly-save { position: absolute; animation: flyUp 0.6s ease-out forwards; color: #f59e0b; font-weight: 800; pointer-events: none; z-index: 150; }
+    @keyframes flyUp { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -150px) scale(2); opacity: 0; } }
+    .ruler-container { position: relative; width: 100%; height: 100px; overflow: hidden; cursor: grab; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; will-change: transform; }
     .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; }
     .tack.major { height: 35px; background: #cbd5e1; position: relative; }
-    .tack.major::after {
-      content: attr(data-val);
-      position: absolute;
-      top: -22px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 9px;
-      font-weight: 800;
-      color: #94a3b8;
-    }
+    .tack.major::after { content: attr(data-val); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: #94a3b8; }
     .tack.minor { height: 15px; }
-    .ruler-pointer {
-      position: absolute;
-      left: 50%;
-      bottom: 0;
-      width: 4px;
-      height: 50px;
-      background: #f59e0b;
-      transform: translateX(-50%);
-      z-index: 20;
-      border-radius: 4px 4px 0 0;
-    }
-
+    .ruler-pointer { position: absolute; left: 50%; bottom: 0; width: 4px; height: 50px; background: #f59e0b; transform: translateX(-50%); z-index: 20; border-radius: 4px 4px 0 0; }
     .food-card { transition: all 0.2s ease; border: 2px solid transparent; }
     .food-card.active { background: #fffbeb; border-color: #f59e0b; transform: scale(1.05); }
     .fav-tag.dragging { position: fixed; z-index: 200; pointer-events: none; transform: scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.1); opacity: 0.9; }
     .tool-card.active { background: #1e293b !important; color: white !important; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+    #fillLevel { transition: height 0.2s ease-out; }
   </style>
 </head>
-
 <body class="flex justify-center bg-gray-100">
-
   <div class="w-full max-w-[460px] h-screen flex flex-col bg-white relative overflow-hidden">
-
-    <!-- Trash zone -->
     <div id="trash-zone" class="absolute top-0 left-0 w-full h-24 bg-red-50 border-b-2 border-red-200 flex flex-col items-center justify-center text-red-400">
-      <svg class="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-        </path>
-      </svg>
+      <svg class="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
       <span class="text-[10px] font-black uppercase tracking-widest">Rilascia per eliminare</span>
     </div>
 
-    <!-- Install banner -->
-    <div id="pwa-install-banner" class="hidden bg-amber-500 m-4 rounded-2xl p-4 shadow-lg flex items-center justify-between z-[60]">
-      <div class="flex items-center space-x-3">
-        <div class="bg-white p-2 rounded-xl shadow-inner">
-          <img src="./icon-192.png" class="w-8 h-8 object-contain" alt="Icon" />
-        </div>
-        <div>
-          <h4 class="text-slate-900 font-extrabold text-sm">Installa App</h4>
-          <p id="install-instruction" class="text-slate-800 text-[10px] font-medium">Sulla tua home in un click</p>
-        </div>
-      </div>
-      <button id="install-action-btn" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider active:scale-95 transition-transform">
-        Installa
-      </button>
-    </div>
-
-    <!-- Header card -->
     <div class="px-6 pt-8 pb-2">
       <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white relative flex items-center justify-between">
         <div class="flex items-center space-x-5">
-          <div class="relative">
-            <img id="heroIcon" src="./spoon.png" class="w-20 h-20 object-contain" alt="Tool icon" />
-            <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2.5 py-1 rounded-lg">x0</div>
+          <div class="relative w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-2 border-slate-700">
+            <img id="heroIcon" src="./spoon.png" class="w-12 h-12 object-contain opacity-40 z-10" alt="Tool" />
+            <div id="fillLevel" class="absolute bottom-0 left-0 w-full bg-amber-500" style="height: 0%"></div>
+            <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2.5 py-1 rounded-lg z-20">x0</div>
           </div>
           <div>
             <span id="resultUnits" class="text-5xl font-black leading-none">0.0</span>
-            <p class="text-[9px] font-bold text-slate-500 uppercase mt-1 tracking-widest">Unità</p>
+            <p id="smartHint" class="text-[9px] font-bold text-amber-400 uppercase mt-1 tracking-tight min-h-[12px]"></p>
           </div>
         </div>
-
         <div class="flex flex-col items-end h-20 justify-between py-1">
-          <button id="saveBtn" class="bg-amber-500 text-slate-900 p-2.5 rounded-full active:scale-90 shadow-lg transition-all" aria-label="Salva preferito">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12m6-6H6"></path>
-            </svg>
-          </button>
-
-          <div class="text-right bg-white/5 px-3 py-1 rounded-xl">
-            <span id="kcalVal" class="text-base font-bold text-amber-500">0</span>
-            <span class="text-[8px] font-bold text-slate-400 ml-1">Kcal</span>
-          </div>
+          <button id="saveBtn" class="bg-amber-500 text-slate-900 p-2.5 rounded-full active:scale-90 shadow-lg transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12m6-6H6"></path></svg></button>
+          <div class="text-right bg-white/5 px-3 py-1 rounded-xl"><span id="kcalVal" class="text-base font-bold text-amber-500">0</span><span class="text-[8px] font-bold text-slate-400 ml-1">Kcal</span></div>
         </div>
       </div>
-
-      <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[40px] items-center">
-        <span class="text-[9px] font-bold text-slate-300 uppercase">Tieni premuto per eliminare</span>
-      </div>
+      <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[40px] items-center text-[9px] font-bold text-slate-300 uppercase">Tieni premuto per eliminare</div>
     </div>
 
-    <!-- Ingredient grid -->
-    <div class="flex-1 px-4 overflow-y-auto no-scrollbar py-2">
-      <div class="grid grid-cols-3 gap-3" id="ingredientGrid"></div>
-    </div>
+    <div class="flex-1 px-4 overflow-y-auto no-scrollbar py-2"><div class="grid grid-cols-3 gap-3" id="ingredientGrid"></div></div>
 
-    <!-- Ruler -->
     <div class="bg-slate-50 border-t border-slate-100 pt-4">
       <div class="flex items-center justify-between px-8 mb-2">
         <button id="resetBtn" class="text-[10px] font-black text-red-500 uppercase bg-red-50 px-4 py-1.5 rounded-full">Reset</button>
-        <div class="text-3xl font-black text-slate-800">
-          <span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span>
-        </div>
+        <div class="text-3xl font-black text-slate-800"><span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span></div>
         <div class="w-16"></div>
       </div>
-
-      <div class="ruler-container" id="ruler">
-        <div class="ruler-pointer"></div>
-        <div class="ruler-track" id="track"></div>
-      </div>
+      <div class="ruler-container" id="ruler"><div class="ruler-pointer"></div><div class="ruler-track" id="track"></div></div>
     </div>
 
-    <!-- Tools -->
     <div class="p-4 grid grid-cols-4 gap-3 bg-white border-t border-slate-100">
-      <button data-tool="cucchiaio" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
-        <img src="./spoon.png" class="w-8 h-8 object-contain mb-1" alt="Cucchiaio" />
-        <span class="text-[8px] font-black uppercase">Cucchiaio</span>
-      </button>
-
-      <button data-tool="cucchiaino" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
-        <img src="./teaspoon.png" class="w-8 h-8 object-contain mb-1" alt="Cucchiaino" />
-        <span class="text-[8px] font-black uppercase text-center">Cucchiaino</span>
-      </button>
-
-      <button data-tool="tazzina" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
-        <img src="./mug.png" class="w-8 h-8 object-contain mb-1" alt="Tazzina" />
-        <span class="text-[8px] font-black uppercase">Tazzina</span>
-      </button>
-
-      <button data-tool="bicchiere" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
-        <img src="./glass.png" class="w-8 h-8 object-contain mb-1" alt="Bicchiere" />
-        <span class="text-[8px] font-black uppercase">Bicchiere</span>
-      </button>
+      <button data-tool="cucchiaio" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./spoon.png" class="w-8 h-8 object-contain mb-1" /><span class="text-[8px] font-black uppercase">Cucchiaio</span></button>
+      <button data-tool="cucchiaino" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./teaspoon.png" class="w-8 h-8 object-contain mb-1" /><span class="text-[8px] font-black uppercase text-center">Cucchiaino</span></button>
+      <button data-tool="tazzina" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./mug.png" class="w-8 h-8 object-contain mb-1" /><span class="text-[8px] font-black uppercase">Tazzina</span></button>
+      <button data-tool="bicchiere" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./glass.png" class="w-8 h-8 object-contain mb-1" /><span class="text-[8px] font-black uppercase">Bicchiere</span></button>
     </div>
   </div>
 
   <script>
-    /*************************************************************
-     *  DB + STATE
-     *************************************************************/
     const db = {
       farina:   { name: "Farina",   img: "./flour.png",  w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60,  bicchiere: 120 }, kcal: 364 },
       olio:     { name: "Olio",     img: "./oil.png",    w: { cucchiaio: 9,  cucchiaino: 3, tazzina: 80,  bicchiere: 180 }, kcal: 884 },
@@ -239,143 +96,95 @@
     };
 
     const state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
-    let lastTickGrams = 0;
+    let lastTickGrams = 0, lastIntegerUnit = 0;
     let dragItem = null, pressTimer = null;
 
-    // Audio
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(f, d, t = 'sine', v = 0.1) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = t;
-      o.frequency.setValueAtTime(f, audioCtx.currentTime);
-      g.gain.setValueAtTime(v, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
-      o.connect(g);
-      g.connect(audioCtx.destination);
-      o.start();
-      o.stop(audioCtx.currentTime + d);
-    }
-
-    /*************************************************************
-     *  UI INIT
-     *************************************************************/
     function initUI() {
       const grid = document.getElementById('ingredientGrid');
-      grid.innerHTML = '';
-
       Object.keys(db).forEach(k => {
         const c = document.createElement('div');
         c.id = `food-${k}`;
         c.className = `food-card p-4 rounded-[2rem] bg-slate-50 flex flex-col items-center border-2 border-transparent ${k === state.food ? 'active' : ''}`;
-        c.addEventListener('click', () => selectFood(k));
-        c.innerHTML = `
-          <img src="${db[k].img}" class="w-14 h-14 object-contain mb-2" alt="${db[k].name}">
-          <span class="text-[10px] font-black uppercase text-slate-600">${db[k].name}</span>
-        `;
+        c.onclick = () => selectFood(k);
+        c.innerHTML = `<img src="${db[k].img}" class="w-14 h-14 object-contain mb-2"><span class="text-[10px] font-black uppercase text-slate-600">${db[k].name}</span>`;
         grid.appendChild(c);
       });
-
       const track = document.getElementById('track');
-      track.innerHTML = '';
       for (let i = 0; i <= 500; i += 5) {
         const t = document.createElement('div');
         t.className = i % 25 === 0 ? 'tack major' : 'tack minor';
         if (i % 50 === 0) t.setAttribute('data-val', i);
         track.appendChild(t);
       }
-
-      // Buttons
-      document.getElementById('resetBtn').addEventListener('click', resetGrams);
-      document.getElementById('saveBtn').addEventListener('click', saveFavorite);
-
-      document.querySelectorAll('[data-tool]').forEach(btn => {
-        btn.addEventListener('click', () => selectTool(btn.dataset.tool));
-      });
-
-      renderFavorites();
+      document.getElementById('resetBtn').onclick = resetGrams;
+      document.getElementById('saveBtn').onclick = saveFavorite;
+      document.querySelectorAll('[data-tool]').forEach(btn => btn.onclick = () => selectTool(btn.dataset.tool));
       updateUI();
       initRuler();
     }
 
-    /*************************************************************
-     *  RULER LOGIC
-     *************************************************************/
-    const ruler = () => document.getElementById('ruler');
-    let startX_r = 0, currT_r = 0, prevT_r = 0, isDraggingRuler = false;
-
     function initRuler() {
-      const r = ruler();
-
-      const onStart = (e) => {
-        isDraggingRuler = true;
-        startX_r = (e.touches ? e.touches[0].clientX : e.clientX);
-      };
-
+      const r = document.getElementById('ruler');
+      let startX = 0, currT = 0, prevT = 0, isDragging = false;
       const onMove = (e) => {
-        if (!isDraggingRuler) return;
-        // Evita scroll/gesture durante il drag
-        if (e.cancelable) e.preventDefault();
-
+        if (!isDragging) return;
         const x = (e.touches ? e.touches[0].clientX : e.clientX);
-        currT_r = Math.min(0, Math.max(-4500, prevT_r + (x - startX_r) * 1.5));
-        document.getElementById('track').style.transform = `translateX(${currT_r}px)`;
-
-        state.grams = Math.abs(Math.round(currT_r / 22) * 5);
-        if (state.grams !== lastTickGrams) {
-          playSound(800, 0.05, 'sine', 0.03);
-          lastTickGrams = state.grams;
-        }
-        updateUI();
+        currT = Math.min(0, Math.max(-4500, prevT + (x - startX) * 1.5));
+        document.getElementById('track').style.transform = `translateX(${currT}px)`;
+        state.grams = Math.abs(Math.round(currT / 22) * 5);
+        if (state.grams !== lastTickGrams) { lastTickGrams = state.grams; updateUI(); }
       };
-
-      const onEnd = () => {
-        isDraggingRuler = false;
-        prevT_r = currT_r;
-      };
-
-      r.addEventListener('touchstart', onStart, { passive: true });
-      r.addEventListener('mousedown', onStart);
-
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('mousemove', onMove);
-
-      window.addEventListener('touchend', onEnd, { passive: true });
-      window.addEventListener('mouseup', onEnd);
+      r.onmousedown = r.ontouchstart = (e) => { isDragging = true; startX = (e.touches ? e.touches[0].clientX : e.clientX); };
+      window.onmousemove = window.ontouchmove = onMove;
+      window.onmouseup = window.ontouchend = () => { isDragging = false; prevT = currT; };
     }
 
-    /*************************************************************
-     *  FAVORITES
-     *************************************************************/
+    function getSmartCombo(grams, foodKey) {
+      const w = db[foodKey].w;
+      let rem = grams; let res = [];
+      const tools = [{id:'bicchiere', n:'Bicchiere'}, {id:'tazzina', n:'Tazzina'}, {id:'cucchiaio', n:'Cucch.'}, {id:'cucchiaino', n:'Cucchiaino'}];
+      for (let t of tools) {
+        const qty = Math.floor(rem / w[t.id]);
+        if (qty > 0) { res.push(`${qty} ${t.n}`); rem %= w[t.id]; }
+      }
+      return res.length > 0 ? "O meglio: " + res.join(' + ') : "";
+    }
+
+    function updateUI() {
+      const food = db[state.food];
+      const units = state.grams / food.w[state.tool];
+      document.getElementById('gramsDisplay').textContent = state.grams;
+      document.getElementById('resultUnits').textContent = units.toFixed(1);
+      document.getElementById('multiplier').textContent = `x${Math.floor(units)}`;
+      document.getElementById('kcalVal').textContent = Math.round((food.kcal * state.grams) / 100);
+      document.getElementById('smartHint').textContent = getSmartCombo(state.grams, state.food);
+      
+      // Ruler UX: Fill effect
+      const fillPercent = (units % 1) * 100;
+      document.getElementById('fillLevel').style.height = (state.grams > 0 && units < 1) ? `${fillPercent}%` : (units >= 1 ? '100%' : '0%');
+
+      // Vibrazione ogni unità intera (1.0, 2.0, ecc)
+      const currentInteger = Math.floor(units);
+      if (currentInteger !== lastIntegerUnit && currentInteger > 0) {
+        if (navigator.vibrate) navigator.vibrate(20);
+        lastIntegerUnit = currentInteger;
+      }
+    }
+
+    function selectFood(f) { state.food = f; document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active')); document.getElementById(`food-${f}`).classList.add('active'); updateUI(); }
+    function selectTool(t) { 
+        state.tool = t; 
+        document.querySelectorAll('.tool-card').forEach(b => b.classList.remove('active')); 
+        document.getElementById(`tool-${t}`).classList.add('active'); 
+        const icons = { cucchiaio: './spoon.png', cucchiaino: './teaspoon.png', tazzina: './mug.png', bicchiere: './glass.png' };
+        document.getElementById('heroIcon').src = icons[t];
+        updateUI(); 
+    }
+    function resetGrams() { state.grams = 0; document.getElementById('track').style.transform = `translateX(0px)`; updateUI(); }
+    
     function saveFavorite(ev) {
       if (state.grams === 0) return;
-
-      // Coordinate per animazione (touch/click/fallback al bottone)
-      const btn = document.getElementById('saveBtn');
-      const rect = btn.getBoundingClientRect();
-
-      let x = rect.left + rect.width / 2;
-      let y = rect.top + rect.height / 2;
-
-      if (ev && ev.touches && ev.touches[0]) {
-        x = ev.touches[0].clientX;
-        y = ev.touches[0].clientY;
-      } else if (ev && typeof ev.clientX === 'number') {
-        x = ev.clientX;
-        y = ev.clientY;
-      }
-
-      const flyer = document.createElement('div');
-      flyer.className = 'fly-save';
-      flyer.style.left = `${x}px`;
-      flyer.style.top = `${y}px`;
-      flyer.textContent = `+${state.grams}g`;
-      document.body.appendChild(flyer);
-      setTimeout(() => flyer.remove(), 600);
-
-      playSound(440, 0.2, 'triangle', 0.1);
-
+      if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
       const id = Date.now();
       state.favorites.unshift({ id, grams: state.grams, food: state.food, name: db[state.food].name });
       if (state.favorites.length > 5) state.favorites.pop();
@@ -384,22 +193,12 @@
 
     function renderFavorites() {
       const list = document.getElementById('favoritesList');
-      list.innerHTML = '';
-
-      if (state.favorites.length === 0) {
-        list.innerHTML = '<span class="text-[9px] font-bold text-slate-300 uppercase">Tieni premuto per eliminare</span>';
-        return;
-      }
-
+      list.innerHTML = state.favorites.length === 0 ? 'Tieni premuto per eliminare' : '';
       state.favorites.forEach(f => {
         const tag = document.createElement('div');
         tag.className = "fav-tag bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-[9px] font-black uppercase border border-amber-200 whitespace-nowrap";
         tag.textContent = `${f.grams}g ${f.name}`;
-
-        tag.addEventListener('touchstart', (e) => startPress(e, f, tag), { passive: true });
-        tag.addEventListener('mousedown', (e) => startPress(e, f, tag));
-        tag.addEventListener('click', () => { if (!dragItem) loadFavorite(f); });
-
+        tag.onmousedown = tag.ontouchstart = (e) => startPress(e, f, tag);
         list.appendChild(tag);
       });
     }
@@ -411,176 +210,33 @@
         document.getElementById('trash-zone').classList.add('active');
         if (navigator.vibrate) navigator.vibrate(50);
       }, 500);
-
-      const endPress = () => clearTimeout(pressTimer);
-      window.addEventListener('touchend', endPress, { once: true, passive: true });
-      window.addEventListener('mouseup', endPress, { once: true });
+      el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
     }
 
-    window.addEventListener('mousemove', e => {
+    window.onmousemove = window.ontouchmove = (e) => {
       if (!dragItem) return;
-      dragItem.element.style.left = `${e.clientX - 40}px`;
-      dragItem.element.style.top = `${e.clientY - 15}px`;
-      document.getElementById('trash-zone').classList.toggle('hover', e.clientY < 120);
-    });
+      const x = (e.touches ? e.touches[0].clientX : e.clientX);
+      const y = (e.touches ? e.touches[0].clientY : e.clientY);
+      dragItem.element.style.left = `${x - 40}px`;
+      dragItem.element.style.top = `${y - 15}px`;
+      document.getElementById('trash-zone').classList.toggle('hover', y < 120);
+    };
 
-    window.addEventListener('mouseup', e => {
+    window.onmouseup = window.ontouchend = (e) => {
       if (!dragItem) return;
-
-      if (e.clientY < 120) {
+      const y = (e.changedTouches ? e.changedTouches[0].clientY : e.clientY);
+      if (y < 120) {
         state.favorites = state.favorites.filter(f => f.id !== dragItem.id);
-        playSound(150, 0.15, 'square', 0.1);
-        const zone = document.getElementById('trash-zone');
-        zone.classList.add('shake');
-        setTimeout(() => zone.classList.remove('shake'), 400);
         renderFavorites();
       }
-
       dragItem.element.classList.remove('dragging');
       dragItem.element.style = "";
       dragItem = null;
       document.getElementById('trash-zone').classList.remove('active', 'hover');
-    });
+    };
 
-    /*************************************************************
-     *  SELECTORS + UI UPDATE
-     *************************************************************/
-    function selectFood(f) {
-      state.food = f;
-      document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
-      document.getElementById(`food-${f}`).classList.add('active');
-      updateUI();
-    }
-
-    function selectTool(t) {
-      state.tool = t;
-      document.querySelectorAll('.tool-card').forEach(b => b.classList.remove('active'));
-      document.getElementById(`tool-${t}`).classList.add('active');
-
-      const icons = {
-        cucchiaio: './spoon.png',
-        cucchiaino: './teaspoon.png',
-        tazzina: './mug.png',
-        bicchiere: './glass.png'
-      };
-      document.getElementById('heroIcon').src = icons[t];
-      updateUI();
-    }
-
-    function loadFavorite(f) {
-      state.grams = f.grams;
-      currT_r = -(f.grams / 5 * 22);
-      prevT_r = currT_r;
-      document.getElementById('track').style.transform = `translateX(${currT_r}px)`;
-      selectFood(f.food);
-    }
-
-    function resetGrams() {
-      currT_r = 0;
-      prevT_r = 0;
-      state.grams = 0;
-      document.getElementById('track').style.transform = `translateX(0px)`;
-      updateUI();
-    }
-
-    function updateUI() {
-      const food = db[state.food];
-      const units = state.grams / food.w[state.tool];
-      document.getElementById('gramsDisplay').textContent = state.grams;
-      document.getElementById('resultUnits').textContent = units.toFixed(1);
-      document.getElementById('multiplier').textContent = `x${Math.floor(units)}`;
-      document.getElementById('kcalVal').textContent = Math.round((food.kcal * state.grams) / 100);
-    }
-
-    /*************************************************************
-     *  PWA INSTALL LOGIC (più robusta)
-     *
-     *  - Chrome mostra install se criteri OK (manifest + SW attivo ecc.)
-     *    e il prompt custom arriva con beforeinstallprompt in condizioni specifiche. [1](https://web.dev/articles/install-criteria)[2](https://developer.chrome.com/blog/update-install-criteria)
-     *************************************************************/
-    const banner = document.getElementById('pwa-install-banner');
-    const installBtn = document.getElementById('install-action-btn');
-    const instruction = document.getElementById('install-instruction');
-
-    let deferredPrompt = null;
-
-    function isIOS() {
-      return /iphone|ipad|ipod/i.test(navigator.userAgent);
-    }
-
-    function isStandalone() {
-      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    }
-
-    function showBannerIOS() {
-      banner.classList.remove('hidden');
-      installBtn.classList.add('hidden');
-      instruction.innerHTML = "Premi <span class='font-bold'>Condividi</span> e poi <span class='font-bold'>'Aggiungi a Home'</span>";
-    }
-
-    function showBannerInstallable() {
-      banner.classList.remove('hidden');
-      installBtn.classList.remove('hidden');
-      instruction.textContent = "Sulla tua home in un click";
-    }
-
-    // Gestione iOS
-    if (!isStandalone() && isIOS()) {
-      showBannerIOS();
-    }
-
-    // beforeinstallprompt (Chrome/Edge ecc.)
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // Impedisce il mini-infobar e ci consente un bottone custom
-      e.preventDefault();
-      deferredPrompt = e;
-      if (!isStandalone()) showBannerInstallable();
-    });
-
-    installBtn.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-
-      try {
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          banner.classList.add('hidden');
-        }
-      } finally {
-        deferredPrompt = null;
-      }
-    });
-
-    /*************************************************************
-     *  SERVICE WORKER REGISTRATION (più safe per sottocartelle)
-     *
-     *  Per installabilità: SW deve essere registrato e attivo. [1](https://web.dev/articles/install-criteria)[3](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/scope)
-     *************************************************************/
-    async function registerSW() {
-      if (!('serviceWorker' in navigator)) return;
-
-      try {
-        // Costruisce URL assoluto rispetto a questa pagina (utile su GitHub Pages in /repo/)
-        const swUrl = new URL('./sw.js', window.location.href);
-
-        // Scope automatico (directory corrente). Se vuoi forzarlo:
-        // await navigator.serviceWorker.register(swUrl, { scope: './' });
-
-        await navigator.serviceWorker.register(swUrl);
-        // console.log('SW registered:', swUrl.toString());
-      } catch (err) {
-        // Se il SW non si registra, Chrome spesso non propone l’install.
-        // console.warn('SW registration failed', err);
-      }
-    }
-
-    /*************************************************************
-     *  BOOT
-     *************************************************************/
-    document.addEventListener('DOMContentLoaded', async () => {
-      initUI();
-      await registerSW();
-    });
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+    initUI();
   </script>
 </body>
 </html>
