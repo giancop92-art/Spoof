@@ -33,25 +33,26 @@
     <div class="w-full max-w-[460px] h-screen flex flex-col bg-white">
         
         <div class="px-6 pt-6 pb-2">
-            <div class="bg-slate-900 rounded-[2.5rem] p-6 shadow-2xl text-white relative flex flex-col items-center overflow-hidden">
-                <button onclick="saveFavorite()" class="absolute top-4 right-4 bg-white/10 p-2 rounded-full active:scale-90 transition-all z-20">
-                    <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
-                </button>
-
-                <div class="flex flex-col items-center space-y-2">
+            <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white relative flex items-center justify-between overflow-hidden">
+                
+                <div class="flex items-center space-x-5">
                     <div class="relative">
                         <img id="heroIcon" src="spoon.png" class="w-20 h-20 object-contain">
                         <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2.5 py-1 rounded-lg shadow-lg">x0</div>
                     </div>
-                    
-                    <div class="text-center">
-                        <span id="resultUnits" class="text-5xl font-black block leading-none">0.0</span>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Unità Calcolate</p>
+                    <div>
+                        <span id="resultUnits" class="text-5xl font-black leading-none">0.0</span>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Unità</p>
                     </div>
+                </div>
 
-                    <div class="bg-white/5 px-4 py-1 rounded-full">
-                        <span id="kcalVal" class="text-sm font-bold text-amber-500">0</span>
-                        <span class="text-[8px] font-bold text-slate-400 uppercase ml-1">Kcal</span>
+                <div class="flex flex-col items-end justify-between h-20 py-1">
+                    <button onclick="saveFavorite()" class="bg-white/10 p-2.5 rounded-full active:scale-90 transition-all">
+                        <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+                    </button>
+                    <div class="text-right bg-white/5 px-3 py-1 rounded-xl">
+                        <span id="kcalVal" class="text-base font-bold text-amber-500">0</span>
+                        <span class="text-[8px] font-bold text-slate-400 uppercase ml-0.5">Kcal</span>
                     </div>
                 </div>
             </div>
@@ -69,7 +70,9 @@
             <div class="flex items-center justify-between px-8 mb-2">
                 <button onclick="resetGrams()" class="text-[10px] font-black text-red-500 uppercase bg-red-50 border border-red-100 px-4 py-1.5 rounded-full">Reset</button>
                 <div class="text-center">
-                    <div class="text-3xl font-black text-slate-800 leading-none"><span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span></div>
+                    <div class="text-3xl font-black text-slate-800 leading-none">
+                        <span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span>
+                    </div>
                 </div>
                 <div class="w-16"></div>
             </div>
@@ -182,7 +185,6 @@
             state.favorites.forEach(f => {
                 const container = document.createElement('div');
                 container.className = "flex-shrink-0 relative group animate-pop";
-                
                 const btn = document.createElement('button');
                 btn.className = "bg-amber-100 text-amber-700 pl-3 pr-8 py-1.5 rounded-full text-[9px] font-black uppercase border border-amber-200";
                 btn.innerHTML = `${f.grams}g ${f.name}`;
@@ -193,12 +195,10 @@
                     trackDiv.style.transform = `translateX(${currentTranslate}px)`;
                     selectFood(f.food);
                 };
-
                 const delBtn = document.createElement('button');
                 delBtn.className = "absolute right-2 top-1/2 -translate-y-1/2 text-amber-900/40 hover:text-red-500 font-bold text-xs p-1";
                 delBtn.innerHTML = "✕";
                 delBtn.onclick = (e) => deleteFavorite(f.id, e);
-
                 container.appendChild(btn);
                 container.appendChild(delBtn);
                 list.appendChild(container);
