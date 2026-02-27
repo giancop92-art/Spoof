@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chef Academy - Pro Edition</title>
+    <title>Chef Academy - Drag Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #ffffff; color: #1e293b; touch-action: none; overflow: hidden; user-select: none; }
         
+        /* Cestino */
+        #trash-zone {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        #trash-zone.active { transform: translateY(0); opacity: 1; }
+        #trash-zone.hover { background: #fee2e2; transform: scale(1.05); border-color: #ef4444; }
+
+        /* Ruler */
         .ruler-container { position: relative; width: 100%; height: 100px; overflow: hidden; cursor: grab; background: #f8fafc; border-top: 1px solid #f1f5f9; }
         .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; will-change: transform; }
         .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; }
@@ -17,48 +27,46 @@
         .tack.minor { height: 15px; }
         .ruler-pointer { position: absolute; left: 50%; bottom: 0; width: 4px; height: 50px; background: #f59e0b; transform: translateX(-50%); z-index: 20; border-radius: 4px 4px 0 0; }
 
-        .food-card { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid transparent; }
+        .food-card { transition: all 0.2s ease; border: 2px solid transparent; }
         .food-card.active { background: #fffbeb; border-color: #f59e0b; transform: scale(1.05); }
 
-        .tool-card.active { background: #1e293b !important; color: white !important; border-color: #1e293b !important; transform: translateY(-4px); }
-        .tool-card.active img { filter: brightness(0) invert(1); }
-        
+        /* Draggable Element */
+        .fav-tag { cursor: grab; transition: transform 0.2s; touch-action: none; }
+        .fav-tag.dragging { position: fixed; z-index: 9999; pointer-events: none; transform: scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.1); opacity: 0.9; }
+
+        .tool-card.active { background: #1e293b !important; color: white !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="flex justify-center">
+<body class="flex justify-center bg-gray-100">
 
-    <div class="w-full max-w-[460px] h-screen flex flex-col bg-white">
+    <div class="w-full max-w-[460px] h-screen flex flex-col bg-white relative">
         
-        <div class="px-6 pt-6 pb-2">
-            <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white relative flex items-center justify-between overflow-hidden">
-                
+        <div id="trash-zone" class="absolute top-0 left-0 w-full h-24 bg-red-50 border-b-2 border-red-200 z-50 flex flex-col items-center justify-center text-red-500">
+            <svg class="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <span class="text-[10px] font-black uppercase tracking-widest">Trascina qui per eliminare</span>
+        </div>
+
+        <div class="px-6 pt-8 pb-2">
+            <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white relative flex items-center justify-between">
                 <div class="flex items-center space-x-5">
                     <div class="relative">
                         <img id="heroIcon" src="spoon.png" class="w-20 h-20 object-contain">
-                        <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2.5 py-1 rounded-lg shadow-lg">x0</div>
+                        <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2.5 py-1 rounded-lg">x0</div>
                     </div>
                     <div>
-                        <span id="resultUnits" class="text-5xl font-black leading-none">0.0</span>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Unità</p>
+                        <span id="resultUnits" class="text-5xl font-black">0.0</span>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Unità</p>
                     </div>
                 </div>
-
-                <div class="flex flex-col items-end justify-between h-20 py-1">
-                    <button onclick="saveFavorite()" class="bg-white/10 p-2.5 rounded-full active:scale-90 transition-all">
-                        <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
-                    </button>
-                    <div class="text-right bg-white/5 px-3 py-1 rounded-xl">
-                        <span id="kcalVal" class="text-base font-bold text-amber-500">0</span>
-                        <span class="text-[8px] font-bold text-slate-400 uppercase ml-0.5">Kcal</span>
-                    </div>
+                <div class="flex flex-col items-end h-20 justify-between">
+                    <button onclick="saveFavorite()" class="bg-white/10 p-2.5 rounded-full active:scale-90"><svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg></button>
+                    <div class="text-right bg-white/5 px-3 py-1 rounded-xl"><span id="kcalVal" class="text-base font-bold text-amber-500">0</span><span class="text-[8px] font-bold text-slate-400 ml-1">Kcal</span></div>
                 </div>
             </div>
             
-            <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[35px] items-center">
-                <span class="text-[9px] font-bold text-slate-300 uppercase">Salva i tuoi pesi comuni</span>
+            <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[40px] items-center">
+                <span class="text-[9px] font-bold text-slate-300 uppercase">Tieni premuto un salvato per eliminarlo</span>
             </div>
         </div>
 
@@ -68,12 +76,8 @@
 
         <div class="bg-slate-50 border-t border-slate-100 pt-4">
             <div class="flex items-center justify-between px-8 mb-2">
-                <button onclick="resetGrams()" class="text-[10px] font-black text-red-500 uppercase bg-red-50 border border-red-100 px-4 py-1.5 rounded-full">Reset</button>
-                <div class="text-center">
-                    <div class="text-3xl font-black text-slate-800 leading-none">
-                        <span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span>
-                    </div>
-                </div>
+                <button onclick="resetGrams()" class="text-[10px] font-black text-red-500 uppercase bg-red-50 px-4 py-1.5 rounded-full">Reset</button>
+                <div class="text-3xl font-black text-slate-800"><span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span></div>
                 <div class="w-16"></div>
             </div>
             <div class="ruler-container" id="ruler">
@@ -82,22 +86,18 @@
             </div>
         </div>
 
-        <div class="p-4 grid grid-cols-4 gap-3 bg-white border-t border-slate-100">
-            <button onclick="selectTool('cucchiaio')" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
-                <img src="spoon.png" class="w-8 h-8 object-contain mb-1">
-                <span class="text-[8px] font-black uppercase">Cucchiaio</span>
+        <div class="p-4 grid grid-cols-4 gap-3 bg-white">
+            <button onclick="selectTool('cucchiaio')" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
+                <img src="spoon.png" class="w-8 h-8 object-contain mb-1"><span class="text-[8px] font-black uppercase">Cucchiaio</span>
             </button>
-            <button onclick="selectTool('cucchiaino')" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
-                <img src="teaspoon.png" class="w-8 h-8 object-contain mb-1">
-                <span class="text-[8px] font-black uppercase">C.ino</span>
+            <button onclick="selectTool('cucchiaino')" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
+                <img src="teaspoon.png" class="w-8 h-8 object-contain mb-1"><span class="text-[8px] font-black uppercase">C.ino</span>
             </button>
-            <button onclick="selectTool('tazzina')" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
-                <img src="mug.png" class="w-8 h-8 object-contain mb-1">
-                <span class="text-[8px] font-black uppercase">Tazzina</span>
+            <button onclick="selectTool('tazzina')" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
+                <img src="mug.png" class="w-8 h-8 object-contain mb-1"><span class="text-[8px] font-black uppercase">Tazzina</span>
             </button>
-            <button onclick="selectTool('bicchiere')" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
-                <img src="glass.png" class="w-8 h-8 object-contain mb-1">
-                <span class="text-[8px] font-black uppercase">Bicchiere</span>
+            <button onclick="selectTool('bicchiere')" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center">
+                <img src="glass.png" class="w-8 h-8 object-contain mb-1"><span class="text-[8px] font-black uppercase">Bicchiere</span>
             </button>
         </div>
     </div>
@@ -114,9 +114,8 @@
 
         const toolIcons = { cucchiaio: "spoon.png", cucchiaino: "teaspoon.png", tazzina: "mug.png", bicchiere: "glass.png" };
         let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
-
-        const trackDiv = document.getElementById('track');
-        let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0;
+        let dragItem = null;
+        let pressTimer = null;
 
         function init() {
             const grid = document.getElementById('ingredientGrid');
@@ -133,45 +132,34 @@
                 const tack = document.createElement('div');
                 tack.className = i % 25 === 0 ? 'tack major' : 'tack minor';
                 if(i % 50 === 0) tack.setAttribute('data-val', i);
-                trackDiv.appendChild(tack);
+                document.getElementById('track').appendChild(tack);
             }
             updateUI();
         }
 
+        // --- Logica Slider ---
         const ruler = document.getElementById('ruler');
-        const handleMove = (x) => {
-            if (!isDragging) return;
+        let isDraggingRuler = false, startX, currentTranslate = 0, prevTranslate = 0;
+
+        ruler.addEventListener('touchstart', e => { isDraggingRuler = true; startX = e.touches[0].clientX; });
+        ruler.addEventListener('mousedown', e => { isDraggingRuler = true; startX = e.clientX; });
+        window.addEventListener('touchmove', e => {
+            if (!isDraggingRuler) return;
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
             currentTranslate = Math.min(0, Math.max(-4500, prevTranslate + (x - startX) * 1.5));
-            trackDiv.style.transform = `translateX(${currentTranslate}px)`;
+            document.getElementById('track').style.transform = `translateX(${currentTranslate}px)`;
             state.grams = Math.abs(Math.round(currentTranslate / 22) * 5);
             updateUI();
-        };
+        });
+        window.addEventListener('touchend', () => { isDraggingRuler = false; prevTranslate = currentTranslate; });
+        window.addEventListener('mouseup', () => { isDraggingRuler = false; prevTranslate = currentTranslate; });
 
-        ruler.addEventListener('touchstart', e => { isDragging = true; startX = e.touches[0].clientX; });
-        ruler.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX; });
-        window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
-        window.addEventListener('mousemove', e => handleMove(e.clientX));
-        window.addEventListener('touchend', () => { isDragging = false; prevTranslate = currentTranslate; });
-        window.addEventListener('mouseup', () => { isDragging = false; prevTranslate = currentTranslate; });
-
-        function resetGrams() {
-            currentTranslate = 0; prevTranslate = 0; state.grams = 0;
-            trackDiv.style.transform = `translateX(0px)`;
-            updateUI();
-        }
-
+        // --- Logica Preferiti & Drag to Delete ---
         function saveFavorite() {
             if (state.grams === 0) return;
             const id = Date.now();
-            const fav = { id, grams: state.grams, food: state.food, name: db[state.food].name };
-            state.favorites.unshift(fav);
+            state.favorites.unshift({ id, grams: state.grams, food: state.food, name: db[state.food].name });
             if (state.favorites.length > 5) state.favorites.pop();
-            renderFavorites();
-        }
-
-        function deleteFavorite(id, event) {
-            event.stopPropagation();
-            state.favorites = state.favorites.filter(f => f.id !== id);
             renderFavorites();
         }
 
@@ -179,32 +167,80 @@
             const list = document.getElementById('favoritesList');
             list.innerHTML = '';
             if(state.favorites.length === 0) {
-                list.innerHTML = '<span class="text-[9px] font-bold text-slate-300 uppercase">Salva i tuoi pesi comuni</span>';
+                list.innerHTML = '<span class="text-[9px] font-bold text-slate-300 uppercase">Tieni premuto per eliminare</span>';
                 return;
             }
             state.favorites.forEach(f => {
-                const container = document.createElement('div');
-                container.className = "flex-shrink-0 relative group animate-pop";
-                const btn = document.createElement('button');
-                btn.className = "bg-amber-100 text-amber-700 pl-3 pr-8 py-1.5 rounded-full text-[9px] font-black uppercase border border-amber-200";
-                btn.innerHTML = `${f.grams}g ${f.name}`;
-                btn.onclick = () => {
-                    state.grams = f.grams;
-                    currentTranslate = -(f.grams / 5 * 22);
-                    prevTranslate = currentTranslate;
-                    trackDiv.style.transform = `translateX(${currentTranslate}px)`;
-                    selectFood(f.food);
-                };
-                const delBtn = document.createElement('button');
-                delBtn.className = "absolute right-2 top-1/2 -translate-y-1/2 text-amber-900/40 hover:text-red-500 font-bold text-xs p-1";
-                delBtn.innerHTML = "✕";
-                delBtn.onclick = (e) => deleteFavorite(f.id, e);
-                container.appendChild(btn);
-                container.appendChild(delBtn);
-                list.appendChild(container);
+                const tag = document.createElement('div');
+                tag.className = "fav-tag bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-[9px] font-black uppercase border border-amber-200 whitespace-nowrap";
+                tag.innerHTML = `${f.grams}g ${f.name}`;
+                
+                // Eventi Pressione e Drag
+                tag.addEventListener('touchstart', (e) => startPress(e, f, tag));
+                tag.addEventListener('mousedown', (e) => startPress(e, f, tag));
+                tag.addEventListener('click', () => { if(!dragItem) loadFavorite(f); });
+                
+                list.appendChild(tag);
             });
         }
 
+        function startPress(e, fav, el) {
+            pressTimer = setTimeout(() => {
+                dragItem = { ...fav, element: el };
+                el.classList.add('dragging');
+                document.getElementById('trash-zone').classList.add('active');
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 500);
+            
+            const endPress = () => { clearTimeout(pressTimer); };
+            window.addEventListener('touchend', endPress, {once:true});
+            window.addEventListener('mouseup', endPress, {once:true});
+        }
+
+        window.addEventListener('mousemove', handleDrag);
+        window.addEventListener('touchmove', handleDrag, { passive: false });
+
+        function handleDrag(e) {
+            if (!dragItem) return;
+            e.preventDefault();
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            dragItem.element.style.left = `${x - 40}px`;
+            dragItem.element.style.top = `${y - 15}px`;
+
+            const trash = document.getElementById('trash-zone');
+            if (y < 100) trash.classList.add('hover');
+            else trash.classList.remove('hover');
+        }
+
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+
+        function endDrag(e) {
+            if (!dragItem) return;
+            const y = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+            
+            if (y < 100) {
+                state.favorites = state.favorites.filter(f => f.id !== dragItem.id);
+                renderFavorites();
+            }
+
+            dragItem.element.classList.remove('dragging');
+            dragItem.element.style = "";
+            dragItem = null;
+            document.getElementById('trash-zone').classList.remove('active', 'hover');
+        }
+
+        function loadFavorite(f) {
+            state.grams = f.grams;
+            currentTranslate = -(f.grams / 5 * 22);
+            prevTranslate = currentTranslate;
+            document.getElementById('track').style.transform = `translateX(${currentTranslate}px)`;
+            selectFood(f.food);
+        }
+
+        // --- Funzioni UI ---
         function selectFood(f) {
             state.food = f;
             document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
@@ -217,6 +253,12 @@
             document.querySelectorAll('.tool-card').forEach(b => b.classList.remove('active'));
             document.getElementById(`tool-${t}`).classList.add('active');
             document.getElementById('heroIcon').src = toolIcons[t];
+            updateUI();
+        }
+
+        function resetGrams() {
+            currentTranslate = 0; prevTranslate = 0; state.grams = 0;
+            document.getElementById('track').style.transform = `translateX(0px)`;
             updateUI();
         }
 
