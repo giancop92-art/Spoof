@@ -1,5 +1,5 @@
-/* sw.js - Versione 2026-02-27-v12 */
-const CACHE_NAME = 'chef-academy-v12';
+/* sw.js - Versione 2026-02-27-v13 */
+const CACHE_NAME = 'chef-academy-v13';
 
 const ASSETS_TO_CACHE = [
   './',
