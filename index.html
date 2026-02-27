@@ -33,30 +33,31 @@
     <div class="w-full max-w-[460px] h-screen flex flex-col bg-white">
         
         <div class="px-6 pt-6 pb-2">
-            <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white flex items-center justify-between">
-                <div class="flex items-center space-x-4">
+            <div class="bg-slate-900 rounded-[2.5rem] p-6 shadow-2xl text-white relative flex flex-col items-center overflow-hidden">
+                <button onclick="saveFavorite()" class="absolute top-4 right-4 bg-white/10 p-2 rounded-full active:scale-90 transition-all z-20">
+                    <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+                </button>
+
+                <div class="flex flex-col items-center space-y-2">
                     <div class="relative">
-                        <img id="heroIcon" src="spoon.png" class="w-14 h-14 object-contain">
-                        <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-lg">x0</div>
+                        <img id="heroIcon" src="spoon.png" class="w-20 h-20 object-contain">
+                        <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2.5 py-1 rounded-lg shadow-lg">x0</div>
                     </div>
-                    <div>
-                        <span id="resultUnits" class="text-4xl font-black">0.0</span>
-                        <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Unità</p>
+                    
+                    <div class="text-center">
+                        <span id="resultUnits" class="text-5xl font-black block leading-none">0.0</span>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Unità Calcolate</p>
                     </div>
-                </div>
-                <div class="flex flex-col items-end">
-                    <button onclick="saveFavorite()" class="mb-2 bg-white/10 p-2 rounded-full active:scale-90 transition-all">
-                        <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
-                    </button>
-                    <div class="text-right">
-                        <span id="kcalVal" class="text-lg font-bold text-amber-500">0</span>
-                        <p class="text-[7px] font-bold text-slate-600 uppercase">Kcal</p>
+
+                    <div class="bg-white/5 px-4 py-1 rounded-full">
+                        <span id="kcalVal" class="text-sm font-bold text-amber-500">0</span>
+                        <span class="text-[8px] font-bold text-slate-400 uppercase ml-1">Kcal</span>
                     </div>
                 </div>
             </div>
             
             <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[35px] items-center">
-                <span class="text-[9px] font-bold text-slate-300 uppercase">I tuoi salvati appariranno qui</span>
+                <span class="text-[9px] font-bold text-slate-300 uppercase">Salva i tuoi pesi comuni</span>
             </div>
         </div>
 
@@ -166,7 +167,7 @@
         }
 
         function deleteFavorite(id, event) {
-            event.stopPropagation(); // Impedisce di attivare il preferito mentre lo si cancella
+            event.stopPropagation();
             state.favorites = state.favorites.filter(f => f.id !== id);
             renderFavorites();
         }
