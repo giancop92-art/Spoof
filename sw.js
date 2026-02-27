@@ -1,34 +1,28 @@
-const CACHE_NAME = 'chef-v5'; // Versione aggiornata
+const CACHE_NAME = 'chef-v10';
+// Lista ridotta all'osso per testare se il problema è un file mancante
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json',
-  './spoon.png',
-  './teaspoon.png',
-  './mug.png',
-  './glass.png',
-  './flour.png',
-  './oil.png',
-  './sugar.png',
-  './salt.png',
-  './rice.png',
-  './milk.png',
-  './icon-192.png'
+  './manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(c => c.addAll(ASSETS))
+  );
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      keys.map(k => caches.delete(k))
     ))
   );
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
 });
