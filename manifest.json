@@ -1,7 +1,7 @@
 {
   "name": "PesoSenzaBilancia - Chef Academy",
   "short_name": "PesoSenza",
-  "description": "Converti i grammi in unità di misura da cucina senza bilancia.",
+  "description": "Converti i grammi in unità senza bilancia.",
   "start_url": "./index.html",
   "scope": ".",
   "display": "standalone",
