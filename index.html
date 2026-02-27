@@ -3,30 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chef Academy - Proportional View</title>
+    <title>Chef Academy - Radial Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; touch-action: manipulation; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; touch-action: manipulation; overflow: hidden; }
         
-        .hero-icon {
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* Posizionamento Radiale */
+        .radial-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+        }
+        .food-item {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .food-item.active img {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
+        }
+        .food-item.active span { color: #f59e0b; font-weight: 800; }
+
+        .center-input {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
         }
 
-        /* Effetto riempimento dinamico per l'icona frazionaria */
-        .fraction-mask {
-            position: relative;
-            display: inline-block;
-            overflow: hidden;
+        .output-mini {
+            background: #0f172a;
+            border-radius: 2.5rem;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        
-        .food-chip.active { background: #1e293b; color: white; border-color: #1e293b; }
-        .tool-btn.active { border-color: #f59e0b; background: #fffbeb; transform: translateY(-3px); }
-        
-        .unit-badge {
-            background: #f59e0b;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+
+        .hero-mini {
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -34,103 +53,117 @@
 
     <div class="w-full max-w-[460px] bg-white min-h-screen shadow-2xl flex flex-col">
         
-        <div class="bg-slate-900 p-4 text-white flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
-                    <img src="chef-hat.png" class="w-7 h-7">
-                </div>
-                <h1 class="font-black text-xs uppercase tracking-widest">Chef Academy</h1>
-            </div>
-            <div class="text-[10px] font-bold text-amber-500 border border-amber-500/20 px-3 py-1 rounded-full">
-                MODALITÀ DINAMICA
+        <div class="p-4 flex justify-between items-center border-b">
+            <h1 class="font-black text-xs uppercase tracking-widest text-slate-400">Chef Academy 2.0</h1>
+            <div id="kcalBadge" class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black">
+                <span id="kcalVal">0</span> KCAL
             </div>
         </div>
 
-        <div class="p-4 flex space-x-2 bg-slate-50 border-b overflow-x-auto no-scrollbar">
-            <button onclick="selectFood('farina')" id="chip-farina" class="food-chip active px-5 py-2 rounded-2xl border bg-white text-[10px] font-extrabold uppercase transition-all">Farina</button>
-            <button onclick="selectFood('olio')" id="chip-olio" class="food-chip px-5 py-2 rounded-2xl border bg-white text-[10px] font-extrabold uppercase transition-all">Olio</button>
-            <button onclick="selectFood('zucchero')" id="chip-zucchero" class="food-chip px-5 py-2 rounded-2xl border bg-white text-[10px] font-extrabold uppercase transition-all">Zucchero</button>
-        </div>
-
-        <div class="p-8">
-            <div class="flex items-center justify-between bg-slate-100 rounded-[2.5rem] p-4 shadow-inner">
-                <button onclick="adjustValue(-10)" class="w-16 h-16 bg-white rounded-3xl shadow-sm text-3xl font-light active:scale-90">-</button>
-                <div class="text-center">
-                    <input type="number" id="mainInput" placeholder="0" class="w-28 text-center text-5xl font-black bg-transparent border-none focus:ring-0">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Grammi</p>
-                </div>
-                <button onclick="adjustValue(10)" class="w-16 h-16 bg-white rounded-3xl shadow-sm text-3xl font-light text-amber-500 active:scale-90">+</button>
-            </div>
-        </div>
-
-        <div class="flex-1 px-6 flex flex-col items-center">
-            <div class="w-full bg-slate-900 rounded-[3.5rem] p-10 flex flex-col items-center justify-center relative overflow-hidden min-h-[320px] shadow-2xl">
-                
-                <div class="absolute top-6 right-8 text-right">
-                    <p id="kcalVal" class="text-2xl font-black text-amber-500 leading-none">0</p>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Kcal</p>
-                </div>
-
-                <div class="flex items-center space-x-6">
+        <div class="p-4 px-6">
+            <div class="output-mini flex items-center justify-between text-white overflow-hidden relative">
+                <div class="flex items-center space-x-4">
                     <div class="relative">
-                        <img id="heroIcon" src="spoon.png" class="w-32 h-32 hero-icon object-contain">
-                        <div id="multiplier" class="absolute -bottom-2 -right-2 unit-badge text-white px-4 py-1 rounded-2xl text-2xl font-black">
-                            x0
-                        </div>
+                        <img id="heroIcon" src="spoon.png" class="w-16 h-16 hero-mini object-contain">
+                        <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-lg shadow-lg">x0</div>
                     </div>
-
-                    <div id="fractionContainer" class="hidden flex flex-col items-center">
-                        <div class="relative w-16 h-16 opacity-60">
-                            <img id="fractionIcon" src="spoon.png" class="w-16 h-16 object-contain">
-                            <div id="fractionOverlay" class="absolute inset-0 bg-slate-900 mix-blend-multiply"></div>
-                        </div>
-                        <span id="fractionText" class="text-[10px] font-black text-amber-500 mt-2">+0.5</span>
+                    <div>
+                        <p id="mainResultText" class="text-2xl font-black leading-none">0.0</p>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Unità Totali</p>
                     </div>
                 </div>
-
-                <div class="mt-12 text-center">
-                    <p id="mainResultDesc" class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em]">Unità necessarie</p>
+                
+                <div id="fractionBox" class="hidden flex items-center bg-white/5 p-2 rounded-2xl border border-white/10">
+                    <div class="relative w-8 h-8">
+                        <img id="fractionIcon" src="spoon.png" class="w-8 h-8 object-contain opacity-40">
+                        <div id="fractionOverlay" class="absolute inset-0 bg-slate-900 mix-blend-multiply"></div>
+                    </div>
+                    <span id="fractionText" class="text-[10px] font-black ml-2 text-amber-500">+0.5</span>
                 </div>
             </div>
         </div>
 
-        <div class="p-8 grid grid-cols-4 gap-4">
-            <button onclick="selectTool('cucchiaio')" id="btn-cucchiaio" class="tool-btn active border-2 border-transparent p-4 rounded-3xl flex flex-col items-center bg-slate-50 transition-all">
-                <img src="spoon.png" class="w-10 h-10 object-contain">
+        <div class="flex-1 flex items-center justify-center">
+            <div class="radial-container" id="radialMenu">
+                
+                <div class="center-input text-center">
+                    <input type="number" id="mainInput" placeholder="0" class="w-24 text-center text-5xl font-black bg-transparent border-none focus:ring-0 text-slate-800">
+                    <div class="flex justify-center space-x-2 mt-2">
+                        <button onclick="adjustValue(-10)" class="w-8 h-8 bg-slate-100 rounded-full font-bold">-</button>
+                        <button onclick="adjustValue(10)" class="w-8 h-8 bg-amber-500 text-white rounded-full font-bold">+</button>
+                    </div>
+                </div>
+
+                </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-4 gap-3 bg-slate-50 border-t">
+            <button onclick="selectTool('cucchiaio')" id="btn-cucchiaio" class="tool-btn active bg-white border-2 border-amber-500 p-3 rounded-2xl flex justify-center shadow-sm">
+                <img src="spoon.png" class="w-8 h-8 object-contain">
             </button>
-            <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="tool-btn border-2 border-transparent p-4 rounded-3xl flex flex-col items-center bg-slate-50 transition-all">
-                <img src="teaspoon.png" class="w-10 h-10 object-contain">
+            <button onclick="selectTool('cucchiaino')" id="btn-cucchiaino" class="tool-btn bg-white border-2 border-transparent p-3 rounded-2xl flex justify-center shadow-sm">
+                <img src="teaspoon.png" class="w-8 h-8 object-contain">
             </button>
-            <button onclick="selectTool('tazzina')" id="btn-tazzina" class="tool-btn border-2 border-transparent p-4 rounded-3xl flex flex-col items-center bg-slate-50 transition-all">
-                <img src="mug.png" class="w-10 h-10 object-contain">
+            <button onclick="selectTool('tazzina')" id="btn-tazzina" class="tool-btn bg-white border-2 border-transparent p-3 rounded-2xl flex justify-center shadow-sm">
+                <img src="mug.png" class="w-8 h-8 object-contain">
             </button>
-            <button onclick="selectTool('bicchiere')" id="btn-bicchiere" class="tool-btn border-2 border-transparent p-4 rounded-3xl flex flex-col items-center bg-slate-50 transition-all">
-                <img src="glass.png" class="w-10 h-10 object-contain">
+            <button onclick="selectTool('bicchiere')" id="btn-bicchiere" class="tool-btn bg-white border-2 border-transparent p-3 rounded-2xl flex justify-center shadow-sm">
+                <img src="glass.png" class="w-8 h-8 object-contain">
             </button>
         </div>
     </div>
 
     <script>
         const db = {
-            farina: { weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal: 364 },
-            olio: { weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal: 884 },
-            zucchero: { weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 }, kcal: 387 }
+            farina: { name: "Farina", img: "flour.png", weights: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal: 364 },
+            olio: { name: "Olio", img: "oil.png", weights: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal: 884 },
+            zucchero: { name: "Zucchero", img: "sugar.png", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 }, kcal: 387 },
+            sale: { name: "Sale", img: "salt.png", weights: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250 }, kcal: 0 },
+            latte: { name: "Latte", img: "milk.png", weights: { cucchiaio: 15, cucchiaino: 5, tazzina: 70, bicchiere: 200 }, kcal: 64 },
+            riso: { name: "Riso", img: "rice.png", weights: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220 }, kcal: 130 }
         };
 
         const toolIcons = { cucchiaio: "spoon.png", cucchiaino: "teaspoon.png", tazzina: "mug.png", bicchiere: "glass.png" };
         let state = { food: 'farina', tool: 'cucchiaio' };
 
+        function initRadial() {
+            const menu = document.getElementById('radialMenu');
+            const keys = Object.keys(db);
+            const radius = 110; // Raggio del cerchio
+            
+            keys.forEach((key, i) => {
+                const angle = (i * (360 / keys.length)) * (Math.PI / 180);
+                const x = 150 + radius * Math.cos(angle);
+                const y = 150 + radius * Math.sin(angle);
+                
+                const div = document.createElement('div');
+                div.id = `food-${key}`;
+                div.className = `food-item ${key === state.food ? 'active' : ''}`;
+                div.style.left = `${x}px`;
+                div.style.top = `${y}px`;
+                div.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <img src="${db[key].img}" class="w-10 h-10 object-contain mb-1">
+                        <span class="text-[7px] uppercase tracking-tighter">${db[key].name}</span>
+                    </div>
+                `;
+                div.onclick = () => selectFood(key);
+                menu.appendChild(div);
+            });
+            calculate();
+        }
+
         function selectFood(f) {
             state.food = f;
-            document.querySelectorAll('.food-chip').forEach(c => c.classList.remove('active'));
-            document.getElementById(`chip-${f}`).classList.add('active');
+            document.querySelectorAll('.food-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`food-${f}`).classList.add('active');
             calculate();
         }
 
         function selectTool(t) {
             state.tool = t;
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${t}`).classList.add('active');
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('border-amber-500'));
+            document.getElementById(`btn-${t}`).classList.add('border-amber-500');
             document.getElementById('heroIcon').src = toolIcons[t];
             document.getElementById('fractionIcon').src = toolIcons[t];
             calculate();
@@ -144,35 +177,30 @@
 
         function calculate() {
             const grams = parseFloat(document.getElementById('mainInput').value) || 0;
-            const unitWeight = db[state.food].weights[state.tool];
-            const units = grams / unitWeight;
+            const food = db[state.food];
+            const units = grams / food.weights[state.tool];
             
             const fullUnits = Math.floor(units);
             const fraction = units - fullUnits;
 
-            // Aggiorna Moltiplicatore Principale
+            document.getElementById('mainResultText').textContent = units.toFixed(1);
             document.getElementById('multiplier').textContent = `x${fullUnits}`;
-            document.getElementById('multiplier').style.display = fullUnits > 0 ? 'block' : 'none';
-            document.getElementById('heroIcon').style.opacity = fullUnits > 0 ? '1' : '0.2';
+            document.getElementById('kcalVal').textContent = Math.round((food.kcal * grams) / 100);
 
-            // Gestione Frazione (l'icona piccola accanto)
-            const fractionContainer = document.getElementById('fractionContainer');
+            // Gestione Frazione
+            const fractionBox = document.getElementById('fractionBox');
             if (fraction > 0.05) {
-                fractionContainer.classList.remove('hidden');
+                fractionBox.classList.remove('hidden');
                 document.getElementById('fractionText').textContent = `+${fraction.toFixed(1)}`;
-                // Regola l'overlay nero per "riempire" l'icona dal basso
-                // Se fraction è 0.7, l'overlay deve coprire il 30% superiore
-                const height = 100 - (fraction * 100);
-                document.getElementById('fractionOverlay').style.height = `${height}%`;
+                const h = 100 - (fraction * 100);
+                document.getElementById('fractionOverlay').style.height = `${h}%`;
             } else {
-                fractionContainer.classList.add('hidden');
+                fractionBox.classList.add('hidden');
             }
-
-            document.getElementById('kcalVal').textContent = Math.round((db[state.food].kcal * grams) / 100);
         }
 
         document.getElementById('mainInput').addEventListener('input', calculate);
-        window.onload = () => { selectTool('cucchiaio'); calculate(); };
+        window.onload = initRadial;
     </script>
 </body>
 </html>
