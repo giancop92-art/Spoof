@@ -1,5 +1,5 @@
-/* sw.js - Versione 2026-02-27-v11 */
-const CACHE_NAME = 'chef-academy-v11';
+/* sw.js - Versione 2026-02-27-v12 */
+const CACHE_NAME = 'chef-academy-v12';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -29,9 +29,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => Promise.all(
-      keys.map((k) => {
-        if (k !== CACHE_NAME) return caches.delete(k);
-      })
+      keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null))
     ))
   );
   self.clients.claim();
@@ -39,8 +37,6 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-
-  // Strategia Network-First per aggiornamenti rapidi
   e.respondWith(
     fetch(e.request)
       .then((response) => {
