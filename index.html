@@ -3,32 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <title>Chef Academy - Full Experience</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #ffffff; color: #1e293b; touch-action: none; overflow: hidden; user-select: none; }
         
-        /* Cestino */
         #trash-zone { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(-100%); opacity: 0; }
         #trash-zone.active { transform: translateY(0); opacity: 1; }
         #trash-zone.hover { background: #fee2e2; transform: scale(1.05); border-color: #ef4444; }
 
-        /* Animazione Volo Salvataggio */
-        .fly-save {
-            position: absolute;
-            animation: flyUp 0.6s ease-out forwards;
-            color: #f59e0b;
-            font-weight: 800;
-            pointer-events: none;
-            z-index: 100;
-        }
-        @keyframes flyUp {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(0, -100px) scale(1.5); opacity: 0; }
-        }
+        .fly-save { position: absolute; animation: flyUp 0.6s ease-out forwards; color: #f59e0b; font-weight: 800; pointer-events: none; z-index: 100; }
+        @keyframes flyUp { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(0, -100px) scale(1.5); opacity: 0; } }
 
-        /* Ruler UI */
         .ruler-container { position: relative; width: 100%; height: 100px; overflow: hidden; cursor: grab; background: #f8fafc; border-top: 1px solid #f1f5f9; }
         .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; will-change: transform; }
         .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; }
@@ -52,6 +43,10 @@
         <div id="trash-zone" class="absolute top-0 left-0 w-full h-24 bg-red-50 border-b-2 border-red-200 z-50 flex flex-col items-center justify-center text-red-500">
             <svg class="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             <span class="text-[10px] font-black uppercase">Elimina</span>
+        </div>
+
+        <div id="installBtn" class="hidden bg-amber-500 text-white p-2 text-center text-xs font-bold cursor-pointer">
+            Clicca qui per installare Chef Academy sul tuo telefono!
         </div>
 
         <div class="px-6 pt-8 pb-2">
@@ -115,6 +110,26 @@
     </div>
 
     <script>
+        // --- LOGICA PWA (INSTALLAZIONE) ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBtn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // --- IL RESTO DELLA LOGICA (AUDIO, DRAG, UI) ---
         const db = {
             farina: { name: "Farina", img: "flour.png", w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 }, kcal: 364 },
             olio: { name: "Olio", img: "oil.png", w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 }, kcal: 884 },
@@ -126,10 +141,8 @@
 
         let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
         let lastTickGrams = 0;
-
-        // --- Audio System ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+
         function playTick() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -161,7 +174,6 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // --- Core Logic ---
         function init() {
             const grid = document.getElementById('ingredientGrid');
             Object.keys(db).forEach(key => {
@@ -172,7 +184,6 @@
                 card.innerHTML = `<img src="${db[key].img}" class="w-14 h-14 object-contain mb-2"><span class="text-[10px] font-black uppercase text-slate-600">${db[key].name}</span>`;
                 grid.appendChild(card);
             });
-
             for(let i=0; i<=500; i+=5) {
                 const tack = document.createElement('div');
                 tack.className = i % 25 === 0 ? 'tack major' : 'tack minor';
@@ -181,7 +192,6 @@
             }
         }
 
-        // Slider con Audio Tick
         const ruler = document.getElementById('ruler');
         let startX_r, currT_r = 0, prevT_r = 0, isDraggingRuler = false;
 
@@ -191,11 +201,7 @@
             currT_r = Math.min(0, Math.max(-4500, prevT_r + (x - startX_r) * 1.5));
             document.getElementById('track').style.transform = `translateX(${currT_r}px)`;
             state.grams = Math.abs(Math.round(currT_r / 22) * 5);
-            
-            if (state.grams !== lastTickGrams) {
-                playTick();
-                lastTickGrams = state.grams;
-            }
+            if (state.grams !== lastTickGrams) { playTick(); lastTickGrams = state.grams; }
             updateUI();
         };
 
@@ -206,37 +212,26 @@
         window.addEventListener('touchend', () => { isDraggingRuler = false; prevT_r = currT_r; });
         window.addEventListener('mouseup', () => { isDraggingRuler = false; prevT_r = currT_r; });
 
-        // Salvataggio con Animazione
         function saveFavorite(e) {
             if (state.grams === 0) return;
-            
-            // Animazione "Volo"
             const flyer = document.createElement('div');
             flyer.className = 'fly-save';
-            flyer.style.left = `${e.clientX}px`;
-            flyer.style.top = `${e.clientY}px`;
+            flyer.style.left = `${e.clientX}px`; flyer.style.top = `${e.clientY}px`;
             flyer.textContent = `+${state.grams}g`;
             document.body.appendChild(flyer);
             setTimeout(() => flyer.remove(), 600);
-
             playSaveSound();
-
             const id = Date.now();
             state.favorites.unshift({ id, grams: state.grams, food: state.food, name: db[state.food].name });
             if (state.favorites.length > 5) state.favorites.pop();
             renderFavorites();
         }
 
-        // --- Drag to Delete & Preferiti ---
         let dragItem = null, pressTimer = null;
-
         function renderFavorites() {
             const list = document.getElementById('favoritesList');
             list.innerHTML = '';
-            if(state.favorites.length === 0) {
-                list.innerHTML = '<span class="text-[9px] font-bold text-slate-300 uppercase">Tieni premuto per eliminare</span>';
-                return;
-            }
+            if(state.favorites.length === 0) { list.innerHTML = '<span class="text-[9px] font-bold text-slate-300 uppercase">Tieni premuto per eliminare</span>'; return; }
             state.favorites.forEach(f => {
                 const tag = document.createElement('div');
                 tag.className = "fav-tag bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-[9px] font-black uppercase border border-amber-200 whitespace-nowrap";
@@ -275,16 +270,13 @@
                 renderFavorites();
             }
             dragItem.element.classList.remove('dragging');
-            dragItem.element.style = "";
-            dragItem = null;
+            dragItem.element.style = ""; dragItem = null;
             document.getElementById('trash-zone').classList.remove('active', 'hover');
         });
 
-        // UI Helpers
         function loadFavorite(f) {
             state.grams = f.grams;
-            currT_r = -(f.grams / 5 * 22);
-            prevT_r = currT_r;
+            currT_r = -(f.grams / 5 * 22); prevT_r = currT_r;
             document.getElementById('track').style.transform = `translateX(${currT_r}px)`;
             selectFood(f.food);
         }
