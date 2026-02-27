@@ -16,7 +16,6 @@
     #trash-zone.active { transform: translateY(0); opacity: 1; }
     #trash-zone.hover  { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
     
-    /* Ruler Precision 1 unit */
     .ruler-container { position: relative; width: 100%; height: 100px; overflow: hidden; cursor: grab; background: #f8fafc; border-top: 1px solid #f1f5f9; }
     .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; will-change: transform; }
     .tack { width: 2px; background: #e2e8f0; margin-right: 12px; flex-shrink: 0; }
@@ -117,7 +116,6 @@
         const t = document.createElement('div');
         t.className = i % 10 === 0 ? 'tack major' : (i % 5 === 0 ? 'tack minor' : 'tack');
         if (i % 10 === 0) t.setAttribute('data-val', i);
-        // Regoliamo la densità: 1px per ogni unità (molto fitto) o più? Usiamo 12px di margin-right.
         track.appendChild(t);
       }
       document.getElementById('resetBtn').onclick = resetGrams;
@@ -133,10 +131,9 @@
       const onMove = (e) => {
         if (!isDragging) return;
         const x = (e.touches ? e.touches[0].clientX : e.clientX);
-        // Lo spostamento ora è 1:1 con le unità
         currT = Math.min(0, Math.max(-7000, prevT + (x - startX)));
         document.getElementById('track').style.transform = `translateX(${currT}px)`;
-        state.grams = Math.abs(Math.round(currT / 14)); // 14 è la somma di width (2) e margin (12) delle tacche
+        state.grams = Math.abs(Math.round(currT / 14));
         if (state.grams !== lastTickGrams) { lastTickGrams = state.grams; updateUI(); }
       };
       r.onmousedown = r.ontouchstart = (e) => { isDragging = true; startX = (e.touches ? e.touches[0].clientX : e.clientX); };
@@ -149,16 +146,13 @@
     function updateUI() {
       const food = db[state.food];
       const units = state.grams / food.w[state.tool];
-      
       document.getElementById('unitLabel').textContent = food.type;
       document.getElementById('gramsDisplay').textContent = state.grams;
       document.getElementById('resultUnits').textContent = units.toFixed(1);
       document.getElementById('multiplier').textContent = `x${Math.floor(units)}`;
       document.getElementById('kcalVal').textContent = Math.round((food.kcal * state.grams) / 100);
-      
       const fillPercent = (units % 1) * 100;
       document.getElementById('fillLevel').style.height = (state.grams > 0 && units < 1) ? `${fillPercent}%` : (units >= 1 ? '100%' : '0%');
-      
       const currentInteger = Math.floor(units);
       if (currentInteger !== lastIntegerUnit && currentInteger > 0) {
         if (navigator.vibrate) navigator.vibrate(30);
@@ -249,7 +243,17 @@
     window.addEventListener('touchend', endDrag);
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
+      navigator.serviceWorker.register('./sw.js?v=11').then(reg => {
+        reg.update();
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+        });
+      });
     }
     initUI();
   </script>
