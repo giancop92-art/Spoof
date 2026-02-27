@@ -3,118 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chef Academy - Pro UI</title>
+    <title>Chef Academy - Pro Scale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #ffffff; color: #1e293b; touch-action: none; overflow: hidden; }
         
-        /* Ruler Styling */
-        .ruler-container {
-            position: relative;
-            width: 100%;
-            height: 100px;
-            overflow: hidden;
-            cursor: grab;
-            background: #f8fafc;
-            border-top: 1px solid #f1f5f9;
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #ffffff; 
+            color: #1e293b; 
+            touch-action: none; 
+            overflow: hidden; 
+            user-select: none;
         }
-        .ruler-track {
-            display: flex;
-            align-items: flex-end;
-            height: 100%;
-            position: absolute;
-            left: 50%;
-            transition: transform 0.1s ease-out;
-            will-change: transform;
+        
+        /* Slider Righello */
+        .ruler-container { 
+            position: relative; 
+            width: 100%; 
+            height: 100px; 
+            overflow: hidden; 
+            cursor: grab; 
+            background: #f8fafc; 
+            border-top: 1px solid #f1f5f9; 
+        }
+        .ruler-track { 
+            display: flex; 
+            align-items: flex-end; 
+            height: 100%; 
+            position: absolute; 
+            left: 50%; 
+            will-change: transform; 
         }
         .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; }
         .tack.major { height: 35px; background: #cbd5e1; position: relative; }
-        .tack.major::after {
-            content: attr(data-val);
-            position: absolute;
-            top: -22px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 9px;
-            font-weight: 800;
-            color: #94a3b8;
+        .tack.major::after { 
+            content: attr(data-val); 
+            position: absolute; 
+            top: -22px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 9px; 
+            font-weight: 800; 
+            color: #94a3b8; 
         }
         .tack.minor { height: 15px; }
-        .ruler-pointer {
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            width: 4px;
-            height: 50px;
-            background: #f59e0b;
-            transform: translateX(-50%);
-            z-index: 20;
-            border-radius: 4px 4px 0 0;
+        .ruler-pointer { 
+            position: absolute; 
+            left: 50%; 
+            bottom: 0; 
+            width: 4px; 
+            height: 50px; 
+            background: #f59e0b; 
+            transform: translateX(-50%); 
+            z-index: 20; 
+            border-radius: 4px 4px 0 0; 
         }
 
-        /* Ingredient Card */
-        .food-card {
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid transparent;
+        /* Card Ingredienti (+20%) */
+        .food-card { 
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 2px solid transparent; 
         }
-        .food-card.active {
-            background: #fffbeb;
-            border-color: #f59e0b;
-            transform: scale(1.05);
+        .food-card.active { 
+            background: #fffbeb; 
+            border-color: #f59e0b; 
+            transform: scale(1.05); 
         }
-        .food-card.active img { transform: scale(1.1); }
 
+        /* Card Strumenti */
+        .tool-card.active { 
+            background: #1e293b !important; 
+            color: white !important; 
+            border-color: #1e293b !important; 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+        }
+        .tool-card.active img { filter: brightness(0) invert(1); }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0.9); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="flex justify-center">
 
     <div class="w-full max-w-[460px] h-screen flex flex-col bg-white">
         
-        <div class="px-8 pt-8 pb-4">
-            <div class="bg-slate-900 rounded-[3rem] p-6 shadow-2xl text-white">
+        <div class="px-6 pt-6 pb-2">
+            <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white relative">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-5">
+                    <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <img id="heroIcon" src="spoon.png" class="w-16 h-16 object-contain">
-                            <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-lg shadow-lg">x0</div>
+                            <img id="heroIcon" src="spoon.png" class="w-14 h-14 object-contain">
+                            <div id="multiplier" class="absolute -bottom-1 -right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-lg">x0</div>
                         </div>
                         <div>
                             <span id="resultUnits" class="text-4xl font-black">0.0</span>
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Unità Calcolate</p>
+                            <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Unità</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <span id="kcalVal" class="text-lg font-bold text-amber-500">0</span>
-                        <p class="text-[8px] font-bold text-slate-600 uppercase">Kcal</p>
+                    <div class="flex flex-col items-end">
+                        <button onclick="saveFavorite()" class="mb-2 bg-white/10 p-2 rounded-full active:scale-90 transition-all">
+                            <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+                        </button>
+                        <div class="text-right">
+                            <span id="kcalVal" class="text-lg font-bold text-amber-500">0</span>
+                            <p class="text-[7px] font-bold text-slate-600 uppercase">Kcal</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="flex-1 px-4 overflow-y-auto no-scrollbar py-4">
-            <div class="grid grid-cols-3 gap-3" id="ingredientGrid">
-                </div>
-        </div>
-
-        <div class="bg-slate-50 border-t border-slate-100 pt-6">
-            <div class="text-center mb-4">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Peso Selezionato</span>
-                <div class="text-4xl font-black text-slate-800"><span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span></div>
+            <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[35px] items-center">
+                <span class="text-[9px] font-bold text-slate-300 uppercase">Tocca la bandierina per salvare</span>
             </div>
-            
+        </div>
+
+        <div class="flex-1 px-4 overflow-y-auto no-scrollbar py-2">
+            <div class="grid grid-cols-3 gap-3" id="ingredientGrid"></div>
+        </div>
+
+        <div class="bg-slate-50 border-t border-slate-100 pt-4">
+            <div class="flex items-center justify-between px-8 mb-2">
+                <button onclick="resetGrams()" class="text-[10px] font-black text-red-500 uppercase bg-red-50 border border-red-100 px-4 py-1.5 rounded-full">Reset</button>
+                <div class="text-center">
+                    <div class="text-3xl font-black text-slate-800 leading-none">
+                        <span id="gramsDisplay">0</span><span class="text-base text-amber-500 ml-1">g</span>
+                    </div>
+                </div>
+                <div class="w-16"></div>
+            </div>
             <div class="ruler-container" id="ruler">
                 <div class="ruler-pointer"></div>
                 <div class="ruler-track" id="track"></div>
             </div>
         </div>
 
-        <div class="p-6 grid grid-cols-4 gap-2 bg-white border-t border-slate-100">
-            <button onclick="selectTool('cucchiaio')" id="tool-cucchiaio" class="py-3 rounded-xl bg-slate-50 text-[9px] font-black uppercase border-2 border-transparent transition-all">Spoon</button>
-            <button onclick="selectTool('cucchiaino')" id="tool-cucchiaino" class="py-3 rounded-xl bg-slate-50 text-[9px] font-black uppercase border-2 border-transparent transition-all">T-Spoon</button>
-            <button onclick="selectTool('tazzina')" id="tool-tazzina" class="py-3 rounded-xl bg-slate-50 text-[9px] font-black uppercase border-2 border-transparent transition-all">Cup</button>
-            <button onclick="selectTool('bicchiere')" id="tool-bicchiere" class="py-3 rounded-xl bg-slate-50 text-[9px] font-black uppercase border-2 border-transparent transition-all">Glass</button>
+        <div class="p-4 grid grid-cols-4 gap-3 bg-white border-t border-slate-100">
+            <button onclick="selectTool('cucchiaio')" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
+                <img src="spoon.png" class="w-8 h-8 object-contain mb-1">
+                <span class="text-[8px] font-black uppercase">Cucchiaio</span>
+            </button>
+            <button onclick="selectTool('cucchiaino')" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
+                <img src="teaspoon.png" class="w-8 h-8 object-contain mb-1">
+                <span class="text-[8px] font-black uppercase">C.ino</span>
+            </button>
+            <button onclick="selectTool('tazzina')" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
+                <img src="mug.png" class="w-8 h-8 object-contain mb-1">
+                <span class="text-[8px] font-black uppercase">Tazzina</span>
+            </button>
+            <button onclick="selectTool('bicchiere')" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 border-2 border-transparent flex flex-col items-center">
+                <img src="glass.png" class="w-8 h-8 object-contain mb-1">
+                <span class="text-[8px] font-black uppercase">Bicchiere</span>
+            </button>
         </div>
     </div>
 
@@ -129,57 +171,80 @@
         };
 
         const toolIcons = { cucchiaio: "spoon.png", cucchiaino: "teaspoon.png", tazzina: "mug.png", bicchiere: "glass.png" };
-        let state = { food: 'farina', tool: 'cucchiaio', grams: 0 };
+        let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
+
+        const trackDiv = document.getElementById('track');
+        let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0;
 
         function init() {
             const grid = document.getElementById('ingredientGrid');
             Object.keys(db).forEach(key => {
                 const card = document.createElement('div');
                 card.id = `food-${key}`;
-                card.className = `food-card p-4 rounded-[2rem] bg-slate-50 flex flex-col items-center cursor-pointer ${key === state.food ? 'active' : ''}`;
+                card.className = `food-card p-4 rounded-[2rem] bg-slate-50 flex flex-col items-center border-2 border-transparent ${key === state.food ? 'active' : ''}`;
                 card.onclick = () => selectFood(key);
-                card.innerHTML = `
-                    <img src="${db[key].img}" class="w-14 h-14 object-contain mb-2">
-                    <span class="text-[10px] font-black uppercase text-slate-600">${db[key].name}</span>
-                `;
+                card.innerHTML = `<img src="${db[key].img}" class="w-14 h-14 object-contain mb-2"><span class="text-[10px] font-black uppercase text-slate-600">${db[key].name}</span>`;
                 grid.appendChild(card);
             });
 
-            const track = document.getElementById('track');
             for(let i=0; i<=500; i+=5) {
                 const tack = document.createElement('div');
                 tack.className = i % 25 === 0 ? 'tack major' : 'tack minor';
                 if(i % 50 === 0) tack.setAttribute('data-val', i);
-                track.appendChild(tack);
+                trackDiv.appendChild(tack);
             }
             updateUI();
         }
 
-        let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0;
         const ruler = document.getElementById('ruler');
-        const track = document.getElementById('track');
+        const handleMove = (x) => {
+            if (!isDragging) return;
+            currentTranslate = Math.min(0, Math.max(-4500, prevTranslate + (x - startX) * 1.5));
+            trackDiv.style.transform = `translateX(${currentTranslate}px)`;
+            state.grams = Math.abs(Math.round(currentTranslate / 22) * 5);
+            updateUI();
+        };
 
         ruler.addEventListener('touchstart', e => { isDragging = true; startX = e.touches[0].clientX; });
-        window.addEventListener('touchmove', e => {
-            if (!isDragging) return;
-            const x = e.touches[0].clientX;
-            currentTranslate = Math.min(0, Math.max(-4500, prevTranslate + (x - startX) * 1.5));
-            track.style.transform = `translateX(${currentTranslate}px)`;
-            state.grams = Math.abs(Math.round(currentTranslate / 22) * 5);
-            updateUI();
-        });
-        window.addEventListener('touchend', () => { isDragging = false; prevTranslate = currentTranslate; });
-
-        // Aggiunto supporto Mouse per test
         ruler.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX; });
-        window.addEventListener('mousemove', e => {
-            if (!isDragging) return;
-            currentTranslate = Math.min(0, Math.max(-4500, prevTranslate + (e.clientX - startX) * 1.5));
-            track.style.transform = `translateX(${currentTranslate}px)`;
-            state.grams = Math.abs(Math.round(currentTranslate / 22) * 5);
-            updateUI();
-        });
+        window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX));
+        window.addEventListener('mousemove', e => handleMove(e.clientX));
+        window.addEventListener('touchend', () => { isDragging = false; prevTranslate = currentTranslate; });
         window.addEventListener('mouseup', () => { isDragging = false; prevTranslate = currentTranslate; });
+
+        function resetGrams() {
+            currentTranslate = 0; prevTranslate = 0; state.grams = 0;
+            trackDiv.style.transform = `translateX(0px)`;
+            updateUI();
+        }
+
+        function saveFavorite() {
+            if (state.grams === 0) return;
+            const fav = { grams: state.grams, food: state.food, name: db[state.food].name };
+            if (!state.favorites.some(f => f.grams === fav.grams && f.food === fav.food)) {
+                state.favorites.unshift(fav);
+                if (state.favorites.length > 5) state.favorites.pop();
+                renderFavorites();
+            }
+        }
+
+        function renderFavorites() {
+            const list = document.getElementById('favoritesList');
+            list.innerHTML = '';
+            state.favorites.forEach(f => {
+                const btn = document.createElement('button');
+                btn.className = "bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-[9px] font-black uppercase flex-shrink-0 animate-pop border border-amber-200";
+                btn.innerHTML = `${f.grams}g ${f.name}`;
+                btn.onclick = () => {
+                    state.grams = f.grams;
+                    currentTranslate = -(f.grams / 5 * 22);
+                    prevTranslate = currentTranslate;
+                    trackDiv.style.transform = `translateX(${currentTranslate}px)`;
+                    selectFood(f.food);
+                };
+                list.appendChild(btn);
+            });
+        }
 
         function selectFood(f) {
             state.food = f;
@@ -190,9 +255,8 @@
 
         function selectTool(t) {
             state.tool = t;
-            document.querySelectorAll('button[onclick^="selectTool"]').forEach(b => b.classList.remove('bg-amber-500', 'text-white', 'border-amber-600'));
-            const btn = document.getElementById(`tool-${t}`);
-            btn.classList.add('bg-amber-500', 'text-white');
+            document.querySelectorAll('.tool-card').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tool-${t}`).classList.add('active');
             document.getElementById('heroIcon').src = toolIcons[t];
             updateUI();
         }
