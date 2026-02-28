@@ -5,27 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
   <link rel="manifest" href="./manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Chef Academy - Precision Edition</title>
+  <title>Chef Academy - Fixed Layout</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
       background: #ffffff; color: #1e293b; 
-      touch-action: pan-y; overflow-y: auto; 
+      touch-action: pan-y; overflow-x: hidden;
       user-select: none; -webkit-tap-highlight-color: transparent;
     }
     
-    /* Zona Reset migliorata */
-    #trash-zone { 
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-      transform: translateY(-100%); 
-      opacity: 0; z-index: 100; 
-    }
-    #trash-zone.active { transform: translateY(0); opacity: 1; }
-    
+    /* Righello */
     .ruler-container { 
       position: relative; width: 100%; height: 100px; 
       overflow: hidden; background: #f8fafc; 
@@ -45,90 +36,110 @@
     }
     
     .food-card { transition: all 0.2s ease; border: 2px solid transparent; }
-    .food-card.active { background: #fffbeb; border-color: #f59e0b; transform: scale(1.05); }
+    .food-card.active { background: #fffbeb; border-color: #f59e0b; }
     .tool-card.active { background: #1e293b !important; color: white !important; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* Animazione per il salvataggio */
+    @keyframes savePop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); background: #10b981; }
+      100% { transform: scale(1); }
+    }
+    .save-active { animation: savePop 0.4s ease; }
   </style>
 </head>
 <body class="flex justify-center bg-gray-100">
-  <div class="w-full max-w-[460px] min-h-screen flex flex-col bg-white relative">
+  <div class="w-full max-w-[460px] min-h-screen flex flex-col bg-white">
     
-    <div id="trash-zone" class="fixed top-0 left-0 w-full h-24 bg-red-50 border-b-2 border-red-200 flex flex-col items-center justify-center text-red-500">
-      <span class="text-xs font-black uppercase tracking-widest">Rilascia per azzerare</span>
-    </div>
-
-    <div class="px-5 pt-8 pb-2">
-      <div class="bg-slate-900 rounded-[2.5rem] p-5 shadow-2xl text-white relative flex items-center h-36">
-        <div class="relative w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-slate-700 flex-shrink-0">
-          <img id="heroIcon" src="./spoon.png" class="w-14 h-14 object-contain opacity-40 z-10" />
+    <div class="px-5 pt-6 pb-2">
+      <div class="bg-slate-900 rounded-[2.5rem] p-6 shadow-2xl text-white flex items-center justify-between h-40">
+        
+        <div class="relative w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-slate-700 flex-shrink-0">
+          <img id="heroIcon" src="./spoon.png" class="w-10 h-10 object-contain opacity-40 z-10" />
           <div id="fillLevel" class="absolute bottom-0 left-0 w-full bg-cyan-400 transition-all duration-300" style="height: 0%"></div>
-          <div id="multiplier" class="absolute bottom-1 right-1 bg-amber-500 text-slate-900 text-[11px] font-black px-2 py-1 rounded-lg z-50">x0</div>
+          <div id="multiplier" class="absolute bottom-1 right-1 bg-amber-500 text-slate-900 text-[10px] font-black px-1.5 py-0.5 rounded z-20">x0</div>
         </div>
-        <div class="flex-1 ml-4">
-          <div class="flex items-baseline gap-1">
-            <span id="intPart" class="text-6xl font-black leading-none tracking-tighter">0</span>
-            <span id="toolName" class="text-sm font-bold text-slate-400 uppercase">Unità</span>
+
+        <div class="flex-1 px-4 min-w-0">
+          <div class="flex items-baseline overflow-hidden">
+            <span id="intPart" class="text-5xl font-black tracking-tighter truncate">0</span>
+            <span id="toolNameDisplay" class="text-xs font-bold text-slate-400 uppercase ml-2">Cucchiaio</span>
           </div>
-          <p id="subPart" class="text-[11px] font-bold text-amber-400 uppercase mt-1 min-h-[14px]"></p>
+          <p id="subPart" class="text-[10px] font-bold text-amber-400 uppercase truncate mt-1">Sposta il righello</p>
         </div>
-        <div class="flex flex-col items-end justify-between h-24">
-          <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-3 rounded-full active:scale-90 shadow-lg shadow-amber-500/20">
+
+        <div class="flex flex-col items-center justify-between h-full py-1">
+          <button id="mainSaveBtn" onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-4 rounded-full shadow-lg active:scale-90 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12m6-6H6"></path></svg>
           </button>
-          <div class="text-right">
+          <div class="text-center">
             <span id="kcalVal" class="text-lg font-bold text-amber-500">0</span>
-            <span class="text-[8px] font-bold text-slate-400 block uppercase">Kcal</span>
+            <span class="text-[8px] font-bold text-slate-500 block uppercase">Kcal</span>
           </div>
         </div>
       </div>
-      <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[40px] items-center py-1"></div>
+
+      <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[35px] items-center">
+        <span class="text-[9px] text-slate-400 font-bold uppercase">Nessun salvataggio</span>
+      </div>
     </div>
 
     <div class="flex-1 px-4 overflow-y-auto no-scrollbar py-2">
         <div class="grid grid-cols-3 gap-3" id="ingredientGrid"></div>
     </div>
 
-    <div class="bg-slate-50 border-t border-slate-100 pt-4 sticky bottom-0">
-      <div class="flex items-center justify-between px-8 mb-2">
-        <button id="resetBtn" onclick="resetGrams()" class="text-[10px] font-black text-red-500 uppercase bg-red-50 px-4 py-2 rounded-full">Reset</button>
-        <div class="text-4xl font-black text-slate-800"><span id="gramsDisplay">0</span><span id="unitLabel" class="text-lg text-amber-500 ml-1">G</span></div>
-        <div class="w-12"></div>
+    <div class="bg-slate-50 border-t border-slate-100 sticky bottom-0 z-50">
+      <div class="flex items-center justify-between px-6 py-3">
+        <button onclick="resetGrams()" class="text-[10px] font-black text-red-500 uppercase bg-red-50 px-4 py-2 rounded-full active:bg-red-100">Reset</button>
+        <div class="text-3xl font-black text-slate-800">
+          <span id="gramsDisplay">0</span><span class="text-sm text-amber-500 ml-1">G</span>
+        </div>
+        <div class="w-16 text-right text-[10px] font-bold text-slate-400 uppercase" id="unitLabel">Grammi</div>
       </div>
+
       <div class="ruler-container" id="ruler">
           <div class="ruler-pointer"></div>
           <div class="ruler-track" id="track"></div>
       </div>
+
       <div class="p-3 grid grid-cols-4 gap-2 bg-white">
-        <button onclick="selectTool('cucchiaio')" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./spoon.png" class="w-7 h-7 mb-1" /><span class="text-[8px] font-black uppercase">Cucchiaio</span></button>
-        <button onclick="selectTool('cucchiaino')" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./teaspoon.png" class="w-7 h-7 mb-1" /><span class="text-[8px] font-black uppercase">Piccolo</span></button>
-        <button onclick="selectTool('tazzina')" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./mug.png" class="w-7 h-7 mb-1" /><span class="text-[8px] font-black uppercase">Tazzina</span></button>
-        <button onclick="selectTool('bicchiere')" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./glass.png" class="w-7 h-7 mb-1" /><span class="text-[8px] font-black uppercase">Bicchiere</span></button>
+        <button onclick="selectTool('cucchiaio')" id="tool-cucchiaio" class="tool-card active p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./spoon.png" class="w-6 h-6 mb-1" /><span class="text-[8px] font-black uppercase">Cucchiaio</span></button>
+        <button onclick="selectTool('cucchiaino')" id="tool-cucchiaino" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./teaspoon.png" class="w-6 h-6 mb-1" /><span class="text-[8px] font-black uppercase">Piccolo</span></button>
+        <button onclick="selectTool('tazzina')" id="tool-tazzina" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./mug.png" class="w-6 h-6 mb-1" /><span class="text-[8px] font-black uppercase">Tazzina</span></button>
+        <button onclick="selectTool('bicchiere')" id="tool-bicchiere" class="tool-card p-3 rounded-2xl bg-slate-50 flex flex-col items-center"><img src="./glass.png" class="w-6 h-6 mb-1" /><span class="text-[8px] font-black uppercase">Bicchiere</span></button>
       </div>
     </div>
   </div>
 
   <script>
     const db = {
-      farina:   { name: "Farina",   img: "./flour.png",  w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60,  bicchiere: 120 }, kcal: 364, type: 'g' },
-      olio:     { name: "Olio",     img: "./oil.png",    w: { cucchiaio: 9,  cucchiaino: 3, tazzina: 80,  bicchiere: 180 }, kcal: 884, type: 'ml' },
-      zucchero: { name: "Zucchero", img: "./sugar.png",  w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80,  bicchiere: 180 }, kcal: 387, type: 'g' },
-      sale:     { name: "Sale",     img: "./salt.png",   w: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250 }, kcal: 0,   type: 'g' },
-      riso:     { name: "Riso",     isEmoji: true, emoji: "🍚", w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90,  bicchiere: 220 }, kcal: 130, type: 'g' },
-      latte:    { name: "Latte",    isEmoji: true, emoji: "🥛", w: { cucchiaio: 15, cucchiaino: 5, tazzina: 70,  bicchiere: 200 }, kcal: 64,  type: 'ml' }
+      farina:   { name: "Farina",   img: "./flour.png",  w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60,  bicchiere: 120 }, kcal: 364 },
+      olio:     { name: "Olio",     img: "./oil.png",    w: { cucchiaio: 9,  cucchiaino: 3, tazzina: 80,  bicchiere: 180 }, kcal: 884 },
+      zucchero: { name: "Zucchero", img: "./sugar.png",  w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80,  bicchiere: 180 }, kcal: 387 },
+      sale:     { name: "Sale",     img: "./salt.png",   w: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250 }, kcal: 0 },
+      riso:     { name: "Riso",     img: "./rice.png",   w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90,  bicchiere: 220 }, kcal: 130 },
+      latte:    { name: "Latte",    img: "./milk.png",   w: { cucchiaio: 15, cucchiaino: 5, tazzina: 70,  bicchiere: 200 }, kcal: 64 }
     };
 
-    const state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
+    let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
+    let prevGrams = 0;
 
-    function initUI() {
-      const grid = document.getElementById('ingredientGrid'); grid.innerHTML = '';
+    function init() {
+      const grid = document.getElementById('ingredientGrid');
       Object.keys(db).forEach(k => {
-        const c = document.createElement('div');
-        c.className = `food-card p-4 rounded-[2rem] bg-slate-50 flex flex-col items-center ${k === state.food ? 'active' : ''}`;
-        c.onclick = () => selectFood(k, c);
-        const iconHtml = db[k].isEmoji ? `<span class="text-4xl mb-2">${db[k].emoji}</span>` : `<img src="${db[k].img}" class="w-14 h-14 mb-2">`;
-        c.innerHTML = `${iconHtml}<span class="text-[10px] font-black uppercase text-slate-600">${db[k].name}</span>`;
-        grid.appendChild(c);
+        const div = document.createElement('div');
+        div.className = `food-card p-4 rounded-3xl bg-slate-50 flex flex-col items-center ${k === state.food ? 'active' : ''}`;
+        div.onclick = () => {
+          state.food = k;
+          document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
+          div.classList.add('active');
+          updateUI();
+        };
+        div.innerHTML = `<img src="${db[k].img}" class="w-12 h-12 mb-2"><span class="text-[10px] font-black uppercase">${db[k].name}</span>`;
+        grid.appendChild(div);
       });
+
       const track = document.getElementById('track');
       for (let i = 0; i <= 500; i++) {
         const t = document.createElement('div');
@@ -136,70 +147,51 @@
         if (i % 10 === 0) t.setAttribute('data-val', i);
         track.appendChild(t);
       }
-      initRuler();
+      setupRuler();
     }
 
-    function initRuler() {
+    function setupRuler() {
       const r = document.getElementById('ruler');
-      const trash = document.getElementById('trash-zone');
-      let startX = 0, startY = 0, currT = 0, prevT = 0, isDragging = false;
+      let startX = 0, currentX = 0, isDown = false;
 
-      r.ontouchstart = (e) => {
-        isDragging = true;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      };
-
-      window.ontouchmove = (e) => {
-        if (!isDragging) return;
-        const x = e.touches[0].clientX;
-        const y = e.touches[0].clientY;
+      const onStart = (e) => { isDown = true; startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX; };
+      const onMove = (e) => {
+        if (!isDown) return;
+        let x = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+        if (x > 0) x = 0;
+        currentX = x;
+        document.getElementById('track').style.transform = `translateX(${currentX}px)`;
         
-        // FIX: Mostra cestino solo se trascini verso l'alto (almeno 30px)
-        if (y < startY - 30) {
-          trash.classList.add('active');
-          trash.style.backgroundColor = (y < startY - 80) ? "#fee2e2" : "#f8fafc";
-        } else {
-          trash.classList.remove('active');
+        state.grams = Math.abs(Math.round(currentX / 16));
+        
+        // FEEDBACK APTICO (Vibra ogni volta che cambia il grammo)
+        if (state.grams !== prevGrams) {
+          if (navigator.vibrate) navigator.vibrate(5);
+          prevGrams = state.grams;
         }
-
-        let moveX = prevT + (x - startX);
-        if (moveX > 0) moveX = 0;
-        
-        currT = moveX;
-        state.grams = Math.abs(Math.round(currT / 16));
-        document.getElementById('track').style.transform = `translateX(${currT}px)`;
         updateUI();
       };
+      const onEnd = () => { isDown = false; };
 
-      window.ontouchend = (e) => {
-        if (!isDragging) return;
-        const y = e.changedTouches[0].clientY;
-        if (y < startY - 80) resetGrams();
-        
-        isDragging = false;
-        prevT = currT;
-        trash.classList.remove('active');
-      };
+      r.addEventListener('touchstart', onStart);
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
     }
 
     function updateUI() {
-      const food = db[state.food];
-      const toolWeight = food.w[state.tool];
-      const units = state.grams / toolWeight;
+      const f = db[state.food];
+      const tw = f.w[state.tool];
+      const units = state.grams / tw;
+      
       document.getElementById('intPart').textContent = Math.floor(units);
       document.getElementById('gramsDisplay').textContent = state.grams;
-      document.getElementById('kcalVal').textContent = Math.round((food.kcal * state.grams) / 100);
+      document.getElementById('kcalVal').textContent = Math.round((f.kcal * state.grams) / 100);
       document.getElementById('fillLevel').style.height = `${(units % 1) * 100}%`;
       document.getElementById('multiplier').textContent = `x${Math.floor(units)}`;
-      document.getElementById('subPart').textContent = state.grams % toolWeight > 0 ? `+ ${state.grams % toolWeight} ${food.type} restanti` : "";
-    }
-
-    function selectFood(f, el) {
-      state.food = f;
-      document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      updateUI();
+      document.getElementById('toolNameDisplay').textContent = state.tool;
+      
+      const rest = state.grams % tw;
+      document.getElementById('subPart').textContent = rest > 0 ? `+ ${rest}g restanti` : "Dose perfetta!";
     }
 
     function selectTool(t) {
@@ -211,31 +203,32 @@
     }
 
     function resetGrams() {
-      state.grams = 0; prevT = 0;
+      state.grams = 0;
       document.getElementById('track').style.transform = `translateX(0px)`;
       updateUI();
     }
 
-    // FIX: Funzione Salva collegata correttamente
     function saveFavorite() {
       if (state.grams === 0) return;
+      
+      // Animazione tasto
+      const btn = document.getElementById('mainSaveBtn');
+      btn.classList.add('save-active');
+      setTimeout(() => btn.classList.remove('save-active'), 400);
+
       const f = db[state.food];
-      state.favorites.unshift({ grams: state.grams, food: state.food, name: f.name, type: f.type });
-      if (state.favorites.length > 5) state.favorites.pop();
-      renderFavorites();
+      state.favorites.unshift(`${state.grams}g ${f.name}`);
+      if (state.favorites.length > 4) state.favorites.pop();
+      
+      const list = document.getElementById('favoritesList');
+      list.innerHTML = state.favorites.map(fav => `
+        <div class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[9px] font-black uppercase border border-amber-200 flex-shrink-0 animate-bounce">
+          ${fav}
+        </div>
+      `).join('');
     }
 
-    function renderFavorites() {
-      const list = document.getElementById('favoritesList'); list.innerHTML = '';
-      state.favorites.forEach(f => {
-        const tag = document.createElement('div');
-        tag.className = "bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-[9px] font-black uppercase border border-amber-200 flex-shrink-0";
-        tag.textContent = `${f.grams}${f.type} ${f.name}`;
-        list.appendChild(tag);
-      });
-    }
-
-    initUI();
+    init();
   </script>
 </body>
 </html>
