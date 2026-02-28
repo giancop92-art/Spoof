@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
   <link rel="manifest" href="./manifest.json" />
-  <title>Chef Academy - Fixed Layout</title>
+  <title>Chef Academy - Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -16,7 +16,6 @@
       user-select: none; -webkit-tap-highlight-color: transparent;
     }
     
-    /* Righello */
     .ruler-container { 
       position: relative; width: 100%; height: 100px; 
       overflow: hidden; background: #f8fafc; 
@@ -35,25 +34,20 @@
       background: #f59e0b; transform: translateX(-50%); z-index: 30; border-radius: 4px 4px 0 0; 
     }
     
-    .food-card { transition: all 0.2s ease; border: 2px solid transparent; }
+    .food-card { transition: all 0.2s ease; border: 2px solid transparent; cursor: pointer; }
     .food-card.active { background: #fffbeb; border-color: #f59e0b; }
     .tool-card.active { background: #1e293b !important; color: white !important; }
+    
+    .fav-tag { animation: pop 0.3s ease-out; }
+    @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     .no-scrollbar::-webkit-scrollbar { display: none; }
-
-    /* Animazione per il salvataggio */
-    @keyframes savePop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); background: #10b981; }
-      100% { transform: scale(1); }
-    }
-    .save-active { animation: savePop 0.4s ease; }
   </style>
 </head>
 <body class="flex justify-center bg-gray-100">
   <div class="w-full max-w-[460px] min-h-screen flex flex-col bg-white">
     
     <div class="px-5 pt-6 pb-2">
-      <div class="bg-slate-900 rounded-[2.5rem] p-6 shadow-2xl text-white flex items-center justify-between h-40">
+      <div class="bg-slate-900 rounded-[2.5rem] p-6 shadow-2xl text-white flex items-center h-40">
         
         <div class="relative w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-slate-700 flex-shrink-0">
           <img id="heroIcon" src="./spoon.png" class="w-10 h-10 object-contain opacity-40 z-10" />
@@ -62,15 +56,15 @@
         </div>
 
         <div class="flex-1 px-4 min-w-0">
-          <div class="flex items-baseline overflow-hidden">
-            <span id="intPart" class="text-5xl font-black tracking-tighter truncate">0</span>
-            <span id="toolNameDisplay" class="text-xs font-bold text-slate-400 uppercase ml-2">Cucchiaio</span>
+          <div class="flex items-baseline">
+            <span id="intPart" class="text-5xl font-black tracking-tighter">0</span>
+            <span id="toolNameDisplay" class="text-xs font-bold text-slate-400 uppercase ml-2 truncate">Cucchiaio</span>
           </div>
-          <p id="subPart" class="text-[10px] font-bold text-amber-400 uppercase truncate mt-1">Sposta il righello</p>
+          <p id="subPart" class="text-[10px] font-bold text-amber-400 uppercase mt-1">Pesatura...</p>
         </div>
 
-        <div class="flex flex-col items-center justify-between h-full py-1">
-          <button id="mainSaveBtn" onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-4 rounded-full shadow-lg active:scale-90 transition-transform">
+        <div class="flex flex-col items-center justify-between h-full py-1 flex-shrink-0 w-16">
+          <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-4 rounded-full shadow-lg active:scale-90 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12m6-6H6"></path></svg>
           </button>
           <div class="text-center">
@@ -80,8 +74,8 @@
         </div>
       </div>
 
-      <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[35px] items-center">
-        <span class="text-[9px] text-slate-400 font-bold uppercase">Nessun salvataggio</span>
+      <div id="favoritesList" class="flex space-x-2 mt-4 overflow-x-auto no-scrollbar min-h-[40px] items-center">
+        <span class="text-[9px] text-slate-400 font-bold uppercase px-2">Nessun salvataggio</span>
       </div>
     </div>
 
@@ -95,7 +89,7 @@
         <div class="text-3xl font-black text-slate-800">
           <span id="gramsDisplay">0</span><span class="text-sm text-amber-500 ml-1">G</span>
         </div>
-        <div class="w-16 text-right text-[10px] font-bold text-slate-400 uppercase" id="unitLabel">Grammi</div>
+        <div class="w-16 text-right text-[10px] font-bold text-slate-400 uppercase">Grammi</div>
       </div>
 
       <div class="ruler-container" id="ruler">
@@ -123,7 +117,7 @@
     };
 
     let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
-    let prevGrams = 0;
+    let currentX = 0, prevGrams = 0;
 
     function init() {
       const grid = document.getElementById('ingredientGrid');
@@ -152,7 +146,7 @@
 
     function setupRuler() {
       const r = document.getElementById('ruler');
-      let startX = 0, currentX = 0, isDown = false;
+      let startX = 0, isDown = false;
 
       const onStart = (e) => { isDown = true; startX = (e.touches ? e.touches[0].clientX : e.clientX) - currentX; };
       const onMove = (e) => {
@@ -160,16 +154,7 @@
         let x = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
         if (x > 0) x = 0;
         currentX = x;
-        document.getElementById('track').style.transform = `translateX(${currentX}px)`;
-        
-        state.grams = Math.abs(Math.round(currentX / 16));
-        
-        // FEEDBACK APTICO (Vibra ogni volta che cambia il grammo)
-        if (state.grams !== prevGrams) {
-          if (navigator.vibrate) navigator.vibrate(5);
-          prevGrams = state.grams;
-        }
-        updateUI();
+        moveTrack(currentX);
       };
       const onEnd = () => { isDown = false; };
 
@@ -178,18 +163,26 @@
       window.addEventListener('touchend', onEnd);
     }
 
+    function moveTrack(x) {
+      document.getElementById('track').style.transform = `translateX(${x}px)`;
+      state.grams = Math.abs(Math.round(x / 16));
+      if (state.grams !== prevGrams) {
+        if (navigator.vibrate) navigator.vibrate(5);
+        prevGrams = state.grams;
+      }
+      updateUI();
+    }
+
     function updateUI() {
       const f = db[state.food];
       const tw = f.w[state.tool];
       const units = state.grams / tw;
-      
       document.getElementById('intPart').textContent = Math.floor(units);
       document.getElementById('gramsDisplay').textContent = state.grams;
       document.getElementById('kcalVal').textContent = Math.round((f.kcal * state.grams) / 100);
-      document.getElementById('fillLevel').style.height = `${(units % 1) * 100}%`;
+      document.getElementById('fillLevel').style.height = `${Math.min((units % 1) * 100, 100)}%`;
       document.getElementById('multiplier').textContent = `x${Math.floor(units)}`;
       document.getElementById('toolNameDisplay').textContent = state.tool;
-      
       const rest = state.grams % tw;
       document.getElementById('subPart').textContent = rest > 0 ? `+ ${rest}g restanti` : "Dose perfetta!";
     }
@@ -203,29 +196,51 @@
     }
 
     function resetGrams() {
-      state.grams = 0;
-      document.getElementById('track').style.transform = `translateX(0px)`;
-      updateUI();
+      currentX = 0;
+      moveTrack(0);
     }
+
+    // --- FUNZIONI SALVATAGGIO ---
 
     function saveFavorite() {
       if (state.grams === 0) return;
-      
-      // Animazione tasto
-      const btn = document.getElementById('mainSaveBtn');
-      btn.classList.add('save-active');
-      setTimeout(() => btn.classList.remove('save-active'), 400);
-
       const f = db[state.food];
-      state.favorites.unshift(`${state.grams}g ${f.name}`);
-      if (state.favorites.length > 4) state.favorites.pop();
-      
+      const newFav = { id: Date.now(), grams: state.grams, food: state.food, name: f.name };
+      state.favorites.unshift(newFav);
+      if (state.favorites.length > 10) state.favorites.pop();
+      renderFavorites();
+    }
+
+    function renderFavorites() {
       const list = document.getElementById('favoritesList');
-      list.innerHTML = state.favorites.map(fav => `
-        <div class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[9px] font-black uppercase border border-amber-200 flex-shrink-0 animate-bounce">
-          ${fav}
+      if (state.favorites.length === 0) {
+        list.innerHTML = '<span class="text-[9px] text-slate-400 font-bold uppercase px-2">Nessun salvataggio</span>';
+        return;
+      }
+      list.innerHTML = state.favorites.map(f => `
+        <div class="fav-tag flex items-center bg-amber-100 border border-amber-200 rounded-full px-3 py-1 flex-shrink-0">
+          <span onclick="loadFavorite(${f.grams}, '${f.food}')" class="text-[9px] font-black uppercase text-amber-700 cursor-pointer">
+            ${f.grams}g ${f.name}
+          </span>
+          <button onclick="deleteFavorite(${f.id})" class="ml-2 text-amber-400 hover:text-red-500 font-bold text-xs">×</button>
         </div>
       `).join('');
+    }
+
+    function loadFavorite(g, foodKey) {
+      // Seleziona l'alimento
+      state.food = foodKey;
+      document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
+      // Cerchiamo l'elemento per rimettere la classe active (opzionale ma consigliato)
+      
+      // Sposta il righello
+      currentX = -(g * 16);
+      moveTrack(currentX);
+    }
+
+    function deleteFavorite(id) {
+      state.favorites = state.favorites.filter(f => f.id !== id);
+      renderFavorites();
     }
 
     init();
