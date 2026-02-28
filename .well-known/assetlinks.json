@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.mymayai.twa",
+        "sha256_cert_fingerprints": ["C1:03:0A:04:17:0A:75:92:19:47:21:7D:47:80:08:36:71:22:A7:1F:9B:59:F4:6A:8E:44:5B:96:DE:57:9A:F3"]
+      }
+    }]
