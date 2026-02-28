@@ -1,7 +1,7 @@
 {
   "id": "peso-senza-bilancia-chef-academy",
   "name": "Peso Senza Bilancia - Chef Academy",
-  "short_name": "PesoSenza",
+  "short_name": "Spoof",
   "description": "Converti i grammi in unità senza bilancia.",
   "start_url": "./index.html",
   "scope": "./",
