@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
-  <title>Chef Academy 2026 - Tool Fix</title>
+  <title>Chef Academy 2026 - Final Fix</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -16,7 +16,7 @@
     }
     
     .sticky-output { 
-        position: relative; z-index: 1000; 
+        position: relative; z-index: 50; 
         background: #0f172a; border-radius: 0 0 2.8rem 2.8rem;
         padding: 1.8rem; overflow: hidden;
     }
@@ -27,77 +27,72 @@
         transition: height 0.3s ease-out; z-index: 1;
     }
 
-    /* POP-OVER ESTERNO E INDIPENDENTE */
+    /* POPOVER - Invisibile e non-intercettabile di default */
     #tool-popover {
-        position: fixed; top: 180px; left: 20px;
-        background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(25px);
-        border: 1px solid rgba(255,255,255,0.15); border-radius: 2rem;
-        padding: 1.2rem; display: none; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;
-        z-index: 999999; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
-        width: calc(100% - 40px); max-width: 320px;
+        position: fixed; top: 180px; left: 50%; transform: translateX(-50%);
+        background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.2); border-radius: 2rem;
+        padding: 1.2rem; width: 90%; max-width: 320px;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;
+        z-index: 9999; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
     }
+    #tool-popover.open { opacity: 1; pointer-events: auto; }
     
-    .popover-item {
+    .pop-item {
         background: rgba(255,255,255,0.05); border-radius: 1.2rem;
-        padding: 1rem; text-align: center; color: white;
-        transition: all 0.2s; border: 2px solid transparent;
+        padding: 0.8rem; text-align: center; color: white; border: 2px solid transparent;
     }
-    .popover-item.active { border-color: #fbbf24; background: rgba(251,191,36,0.2); }
+    .pop-item.active { border-color: #fbbf24; background: rgba(251,191,36,0.1); }
 
-    .food-btn.active { border: 3px solid #fbbf24; background: #fffbeb !important; transform: scale(1.05); }
+    .food-card { border: 2px solid transparent; transition: all 0.2s; cursor: pointer; }
+    .food-card.active { border-color: #fbbf24; background: #fffbeb !important; transform: scale(1.05); }
 
-    /* Fix per trascinamento preferiti */
-    #drop-delete-zone { 
-        position: fixed; top: 0; width: 100%; height: 130px; 
-        background: #ef4444; z-index: 80000; 
-        transform: translateY(-100%); display: flex; flex-direction: column; 
-        align-items: center; justify-content: center; color: white;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    #drop-delete-zone.visible { transform: translateY(0); }
-
-    .fav-item { background: white; border-radius: 1.2rem; padding: 12px; min-width: 78px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); touch-action: none; position: relative; }
-    .fav-dragging { z-index: 999999 !important; position: fixed !important; pointer-events: none; transform: scale(1.2) !important; }
-
-    .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-    .collapsible-content.open { max-height: 1000px; }
-
+    /* UI Elements */
     .ruler-container { position: relative; width: 100%; height: 75px; overflow: hidden; background: white; }
     .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; }
     .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; height: 15px; }
     .tack.major { height: 38px; background: #94a3b8; position: relative; }
     .tack.major::after { content: attr(data-val); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: #94a3b8; }
+    
+    #drop-delete-zone { 
+        position: fixed; top: 0; width: 100%; height: 120px; 
+        background: #ef4444; z-index: 10000; 
+        transform: translateY(-100%); transition: transform 0.3s ease;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
+    }
+    #drop-delete-zone.visible { transform: translateY(0); }
   </style>
 </head>
-<body onclick="resumeAudio()">
+<body ontouchstart="unlockAudio()">
 
-  <div id="drop-delete-zone"><span class="text-4xl">🗑️</span><span class="text-[10px] font-black uppercase mt-2">Elimina</span></div>
+  <div id="drop-delete-zone"><span class="text-3xl">🗑️</span><span class="text-[10px] font-black uppercase mt-1">Elimina</span></div>
 
   <div id="tool-popover"></div>
 
   <div class="flex flex-col h-full">
-      <header class="p-5 bg-[#0f172a] flex justify-between items-center">
+      <header class="p-5 bg-[#0f172a] flex justify-between items-center z-50">
           <div class="text-white font-black italic text-lg tracking-tighter">CHEF<span class="text-amber-500">ACADEMY</span></div>
       </header>
 
       <div class="sticky-output">
           <div class="liquid-bg" id="liquid"></div>
           <div class="relative z-10 flex items-center justify-between">
-              
-              <div id="tool-trigger" onclick="togglePopover(event)" class="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10 text-center min-w-[90px] active:scale-95 transition-transform cursor-pointer">
-                  <span id="mainEmoji" class="text-4xl block mb-1 pointer-events-none">🥄</span>
-                  <span id="toolLabel" class="text-[8px] font-black text-amber-500 uppercase pointer-events-none">Cucchiaio</span>
-                  <div class="text-[7px] text-white/40 font-bold mt-1 pointer-events-none">CAMBIA ▼</div>
+              <div onclick="togglePopover(event)" class="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10 text-center min-w-[90px] active:scale-95 transition-transform">
+                  <span id="mainEmoji" class="text-4xl block mb-1">🥄</span>
+                  <span id="toolLabel" class="text-[8px] font-black text-amber-500 uppercase">Cucchiaio</span>
+                  <div class="text-[7px] text-white/40 font-bold mt-1 uppercase">Cambia ▼</div>
               </div>
 
-              <div class="flex-1 px-6 text-white">
-                  <div class="flex items-baseline leading-none">
+              <div class="flex-1 px-6 text-white text-right">
+                  <div class="flex items-baseline justify-end leading-none">
                       <span id="intDisplay" class="text-7xl font-black tracking-tighter">0</span>
                       <span class="text-xs font-bold text-amber-500 ml-2">DOSI</span>
                   </div>
                   <p id="kcalDisplay" class="text-[10px] font-bold text-white/30 uppercase mt-2 tracking-widest">0 KCAL</p>
               </div>
-              <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-5 rounded-[2rem] shadow-2xl active:scale-90 transition-all">
+              
+              <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-5 rounded-[2rem] shadow-2xl active:scale-90 transition-all ml-4">
                   <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 6v12m6-6H6"></path></svg>
               </button>
           </div>
@@ -106,19 +101,18 @@
       <main class="flex-1 overflow-y-auto no-scrollbar px-5 py-6 space-y-6" onclick="closePopover()">
           <div id="favoritesList" class="flex space-x-4 overflow-x-auto no-scrollbar min-h-[100px] items-center"></div>
 
-          <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
-              <button onclick="toggleCollapse('food-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ingredienti <span id="food-section-icon">▼</span></button>
-              <div id="food-section" class="collapsible-content open"><div class="grid grid-cols-3 gap-3 p-3" id="foodGrid"></div></div>
+          <div class="bg-white rounded-[2.2rem] p-2 shadow-sm relative z-10">
+              <div class="grid grid-cols-3 gap-3 p-3" id="foodGrid"></div>
           </div>
       </main>
 
-      <footer class="bg-white border-t border-slate-100">
+      <footer class="bg-white border-t border-slate-100 z-50">
           <div class="flex justify-between items-center px-8 py-4">
               <button onclick="resetGrams()" class="text-[10px] font-black text-red-400 uppercase">Reset</button>
               <div class="text-5xl font-black text-slate-800 tracking-tighter"><span id="gramsDisplay">0</span><span class="text-sm text-amber-500 ml-1">G</span></div>
           </div>
           <div class="ruler-container" id="ruler">
-              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-1.5 h-12 bg-amber-500 z-30 rounded-t-full shadow-lg"></div>
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-1.5 h-12 bg-amber-500 z-30 rounded-t-full"></div>
               <div class="ruler-track" id="track"></div>
           </div>
       </footer>
@@ -137,13 +131,13 @@
     let currentX = 0;
     let audioCtx = null;
 
-    function resumeAudio() {
+    function unlockAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function playSfx(f, t, d) {
-        if(!audioCtx) return;
+        if(!audioCtx || audioCtx.state !== 'running') return;
         const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
         o.type = t; o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
         o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
@@ -154,13 +148,21 @@
         Object.keys(db).forEach(k => {
             const d = document.createElement('div');
             d.id = 'food-' + k;
-            d.className = "p-4 bg-slate-50 rounded-2xl flex flex-col items-center border-2 border-transparent transition-all cursor-pointer";
-            d.innerHTML = `<span class="text-3xl pointer-events-none">${db[k].emoji}</span>`;
-            d.onclick = (e) => { e.stopPropagation(); state.food = k; updateUI(); playSfx(500, 'sine', 0.1); };
+            d.className = "p-4 bg-slate-50 rounded-2xl flex flex-col items-center food-card";
+            d.innerHTML = `<span class="text-3xl">${db[k].emoji}</span>`;
+            d.onclick = (e) => { e.stopPropagation(); state.food = k; updateUI(); playSfx(600, 'sine', 0.1); };
             fGrid.appendChild(d);
         });
 
         renderPopover();
+        
+        const track = document.getElementById('track');
+        for(let i=0; i<=500; i++) {
+            const t = document.createElement('div');
+            t.className = i%10===0 ? 'tack major' : 'tack';
+            if(i%10===0) t.setAttribute('data-val', i);
+            track.appendChild(t);
+        }
         setupRuler();
         updateUI();
     }
@@ -170,15 +172,15 @@
         pop.innerHTML = '';
         Object.keys(toolIcons).forEach(k => {
             const d = document.createElement('div');
-            d.className = `popover-item cursor-pointer ${state.tool === k ? 'active' : ''}`;
-            d.innerHTML = `<span class="text-2xl block pointer-events-none">${toolIcons[k]}</span><span class="text-[8px] font-bold uppercase mt-1 pointer-events-none">${k}</span>`;
+            d.className = `pop-item ${state.tool === k ? 'active' : ''}`;
+            d.innerHTML = `<span class="text-2xl block">${toolIcons[k]}</span><span class="text-[8px] font-bold uppercase mt-1">${k}</span>`;
             d.onclick = (e) => { 
                 e.stopPropagation(); 
                 state.tool = k; 
                 updateUI(); 
-                renderPopover(); // Rinfresca il bordo giallo interno
-                setTimeout(closePopover, 100); 
-                playSfx(900, 'sine', 0.1); 
+                renderPopover();
+                setTimeout(closePopover, 150);
+                playSfx(900, 'sine', 0.1);
             };
             pop.appendChild(d);
         });
@@ -186,17 +188,17 @@
 
     function togglePopover(e) {
         e.stopPropagation();
-        resumeAudio();
         const p = document.getElementById('tool-popover');
-        p.style.display = p.style.display === 'grid' ? 'none' : 'grid';
+        p.classList.toggle('open');
+        playSfx(1000, 'sine', 0.05);
     }
 
-    function closePopover() { document.getElementById('tool-popover').style.display = 'none'; }
+    function closePopover() { document.getElementById('tool-popover').classList.remove('open'); }
 
     function setupRuler() {
         const r = document.getElementById('ruler');
         let startX = 0, isDown = false;
-        r.ontouchstart = (e) => { isDown = true; startX = e.touches[0].clientX - currentX; closePopover(); resumeAudio(); };
+        r.ontouchstart = (e) => { isDown = true; startX = e.touches[0].clientX - currentX; closePopover(); unlockAudio(); };
         window.addEventListener('touchmove', (e) => {
             if (!isDown) return;
             currentX = e.touches[0].clientX - startX;
@@ -211,6 +213,7 @@
         const f = db[state.food];
         const tw = f.w[state.tool];
         const units = state.grams / tw;
+        
         document.getElementById('intDisplay').innerText = Math.floor(units);
         document.getElementById('gramsDisplay').innerText = state.grams;
         document.getElementById('track').style.transform = `translateX(${currentX}px)`;
@@ -218,13 +221,23 @@
         document.getElementById('toolLabel').innerText = state.tool;
         document.getElementById('kcalDisplay').innerText = Math.round((f.kcal * state.grams) / 100) + " KCAL";
         document.documentElement.style.setProperty('--p-level', ((units % 1) * 100) + '%');
-        document.querySelectorAll('.food-btn, #foodGrid div').forEach(el => el.classList.remove('active'));
-        if(document.getElementById('food-' + state.food)) document.getElementById('food-' + state.food).classList.add('active');
-        if(state.grams > 0 && state.grams % tw === 0) { navigator.vibrate?.(15); playSfx(440, 'sine', 0.1); }
+        
+        document.querySelectorAll('.food-card').forEach(el => el.classList.remove('active'));
+        const activeCard = document.getElementById('food-' + state.food);
+        if(activeCard) activeCard.classList.add('active');
+
+        if(state.grams > 0 && state.grams % tw === 0) { 
+            navigator.vibrate?.(15); 
+            playSfx(440, 'sine', 0.1); 
+        }
     }
 
-    function recallFavorite(g) { state.grams = g; currentX = -(g * 22); updateUI(); playSfx(600, 'sine', 0.2); }
-    function saveFavorite() { if(state.grams === 0) return; state.favorites.unshift({ id: Date.now(), grams: state.grams, emoji: db[state.food].emoji }); playSfx(880, 'sine', 0.1); renderFavorites(); }
+    function saveFavorite() {
+        if(state.grams === 0) return;
+        state.favorites.unshift({ id: Date.now(), grams: state.grams, emoji: db[state.food].emoji });
+        playSfx(880, 'sine', 0.1);
+        renderFavorites();
+    }
 
     function renderFavorites() {
         const list = document.getElementById('favoritesList');
@@ -245,15 +258,14 @@
             };
             div.ontouchend = (e) => {
                 zone.classList.remove('visible');
-                if (!moved) recallFavorite(f.grams);
-                else if (e.changedTouches[0].clientY < 130) { state.favorites = state.favorites.filter(x => x.id !== f.id); playSfx(150, 'square', 0.2); renderFavorites(); }
+                if (!moved) { state.grams = f.grams; currentX = -(f.grams * 22); updateUI(); }
+                else if (e.changedTouches[0].clientY < 120) { state.favorites = state.favorites.filter(x => x.id !== f.id); renderFavorites(); }
                 div.classList.remove('fav-dragging'); div.style.position = 'relative'; div.style.left = '0'; div.style.top = '0';
             };
             list.appendChild(div);
         });
     }
 
-    function toggleCollapse(id) { const el = document.getElementById(id); el.classList.toggle('open'); document.getElementById(id + '-icon').innerText = el.classList.contains('open') ? '▼' : '▶'; }
     function resetGrams() { currentX = 0; state.grams = 0; updateUI(); }
     init();
 </script>
