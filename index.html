@@ -3,297 +3,219 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>Chef Academy 2026 - Fixed</title>
+  <title>Chef Academy 2026 - Magnetic & Fluid</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&display=swap" rel="stylesheet" />
   <style>
-    :root { --p-level: 0%; }
-    body { 
-      font-family: 'Plus Jakarta Sans', sans-serif; 
-      background: #f1f5f9; color: #1e293b; touch-action: none; 
-      overflow: hidden; height: 100vh; -webkit-user-select: none; user-select: none;
-    }
+    :root { --p-level: 0%; --accent: #fbbf24; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fdfdfd; margin: 0; overflow: hidden; height: 100vh; user-select: none; -webkit-user-select: none; color: #1e293b; }
     
-    .sticky-output { 
-        position: relative; z-index: 1000; 
-        background: #0f172a; border-radius: 0 0 2.8rem 2.8rem;
-        padding: 1.8rem; overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    }
-    .liquid-bg {
-        position: absolute; bottom: 0; left: 0; width: 100%; 
-        height: var(--p-level); 
-        background: linear-gradient(0deg, rgba(251,191,36,0.2) 0%, rgba(251,191,36,0) 100%);
-        transition: height 0.3s ease-out; z-index: 1;
-    }
+    .header-box { position: relative; z-index: 50; background: #0f172a; padding: 1.8rem 1.5rem; color: white; border-radius: 0 0 3rem 3rem; }
+    .liquid-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--p-level); background: linear-gradient(0deg, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0) 100%); z-index: 1; pointer-events: none; transition: height 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
 
-    #drop-delete-zone { 
-        position: fixed; top: 0; width: 100%; height: 130px; 
-        background: #ef4444; z-index: 80000; 
-        transform: translateY(-100%); display: flex; flex-direction: column; 
-        align-items: center; justify-content: center; color: white;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* CESTINO GLASS ELEGANTE */
+    #drop-delete { 
+        position: fixed; bottom: 0; width: 100%; height: 160px; 
+        background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        z-index: 999999; transform: translate3d(0, 100%, 0); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        border-top: 1px solid rgba(255,255,255,0.1);
     }
-    #drop-delete-zone.visible { transform: translateY(0); }
+    #drop-delete.show { transform: translate3d(0, 0, 0); }
+    #drop-delete.active-drop { background: rgba(239, 68, 68, 0.08); }
 
-    .fav-item { 
-        background: white; border-radius: 1.2rem; padding: 12px;
-        min-width: 78px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        touch-action: none; position: relative; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .fav-dragging { 
-        z-index: 99999 !important; position: fixed !important; 
-        pointer-events: none; transform: scale(1.2) !important;
-        box-shadow: 0 40px 80px rgba(0,0,0,0.4) !important;
-    }
+    #tool-modal { position: fixed; inset: 0; background: rgba(15,23,42,0.9); z-index: 1000000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
 
-    /* Stile per elemento SELEZIONATO */
-    .grid-selection {
-        border: 3px solid transparent;
-        transition: all 0.2s ease;
-    }
-    .grid-selection.active {
-        border-color: #fbbf24;
-        background-color: #fffbeb !important;
-        transform: scale(1.05);
-    }
+    /* RULER SMART */
+    #ruler { position: relative; height: 100px; touch-action: none; cursor: grab; }
+    .track { display: flex; align-items: flex-end; position: absolute; left: 50%; height: 100%; pointer-events: none; will-change: transform; }
+    .tack { width: 1.5px; height: 14px; background: #e2e8f0; margin-right: 25px; flex-shrink: 0; transition: background 0.3s, height 0.3s; }
+    .tack.big { height: 35px; background: #cbd5e1; position: relative; }
+    .tack.snap-point { background: var(--accent) !important; height: 45px !important; width: 2.5px !important; box-shadow: 0 0 10px rgba(251,191,36,0.4); }
 
-    .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; }
-    .collapsible-content.open { max-height: 1000px; }
-
-    .ruler-container { position: relative; width: 100%; height: 75px; overflow: hidden; background: white; }
-    .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; transition: transform 0.1s ease-out; }
-    .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; height: 15px; }
-    .tack.major { height: 38px; background: #94a3b8; position: relative; }
-    .tack.major::after { content: attr(data-val); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: #94a3b8; }
+    .food-card { background: white; padding: 1.2rem; border-radius: 2.2rem; text-align: center; border: 1px solid #f1f5f9; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .food-card.active { border-color: var(--accent); background: #fffbeb; transform: scale(0.95); }
+    
+    /* GHOST FLUIDO */
+    .drag-ghost { position: fixed !important; pointer-events: none; z-index: 2000000 !important; will-change: transform; transition: transform 0.1s linear; }
   </style>
 </head>
-<body>
+<body onclick="unlockAudio()">
 
-  <div id="drop-delete-zone">
-      <span class="text-4xl">🗑️</span>
-      <span class="text-[10px] font-black uppercase tracking-widest mt-2">Elimina</span>
+  <div id="drop-delete">
+    <div class="text-2xl opacity-40 mb-2">🗑️</div>
+    <span class="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-400">Rilascia</span>
+  </div>
+
+  <div id="tool-modal" onclick="closeModal()">
+      <div id="modal-list" class="w-full flex flex-col items-center"></div>
   </div>
 
   <div class="flex flex-col h-full">
-      <header class="p-5 bg-[#0f172a] flex justify-between items-center">
-          <div class="text-white font-black italic text-lg tracking-tighter">CHEF<span class="text-amber-500">ACADEMY</span></div>
-          <div class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-[10px] text-white font-bold">PRO</div>
-      </header>
-
-      <div class="sticky-output">
+      <div class="header-box">
           <div class="liquid-bg" id="liquid"></div>
-          <div class="relative z-10 flex items-center justify-between">
-              <div class="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10 text-center min-w-[80px]">
-                  <span id="mainEmoji" class="text-4xl block mb-1">🥄</span>
-                  <span id="toolLabel" class="text-[8px] font-black text-amber-500 uppercase">Cucchiaio</span>
+          <div class="relative z-10 flex justify-between items-end">
+              <div onclick="openModal(event)" class="bg-white/5 p-4 rounded-[2rem] border border-white/10 text-center min-w-[90px]">
+                  <div id="curEmoji" class="text-3xl mb-1">🥄</div>
+                  <div class="text-[7px] font-black text-amber-400 uppercase tracking-widest">Utensile</div>
               </div>
-              <div class="flex-1 px-6 text-white">
-                  <div class="flex items-baseline leading-none">
-                      <span id="intDisplay" class="text-7xl font-black tracking-tighter">0</span>
-                      <span class="text-xs font-bold text-amber-500 ml-2">DOSI</span>
-                  </div>
-                  <p id="kcalDisplay" class="text-[10px] font-bold text-white/30 uppercase mt-2 tracking-widest">0 KCAL</p>
+              <div class="flex-1 text-right pr-4">
+                  <div class="text-7xl font-light tracking-tighter leading-none text-white"><span id="dosi">0</span><span class="text-lg text-amber-500 font-bold ml-1">.0</span></div>
+                  <div id="kcal" class="text-[9px] font-bold opacity-30 uppercase tracking-[0.2em] mt-2">0 Calories</div>
               </div>
-              <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-5 rounded-[2rem] shadow-2xl active:scale-90 transition-all">
-                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 6v12m6-6H6"></path></svg>
+              <button onclick="saveFav()" class="bg-amber-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
               </button>
           </div>
       </div>
 
-      <main class="flex-1 overflow-y-auto no-scrollbar px-5 py-6 space-y-6">
-          <div id="favoritesList" class="flex space-x-4 overflow-x-auto no-scrollbar min-h-[100px] items-center"></div>
-
-          <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
-              <button onclick="toggleCollapse('food-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ingredienti <span id="food-section-icon">▼</span></button>
-              <div id="food-section" class="collapsible-content open"><div class="grid grid-cols-3 gap-3 p-3" id="foodGrid"></div></div>
-          </div>
-
-          <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
-              <button onclick="toggleCollapse('tool-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Dosatori <span id="tool-section-icon">▶</span></button>
-              <div id="tool-section" class="collapsible-content"><div class="grid grid-cols-3 gap-3 p-3" id="toolGrid"></div></div>
-          </div>
+      <main class="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+          <div id="favs-list" class="flex gap-4 overflow-x-auto pb-4 no-scrollbar min-h-[90px] items-center"></div>
+          <div class="grid grid-cols-3 gap-4" id="grid"></div>
       </main>
 
-      <footer class="bg-white border-t border-slate-100">
-          <div class="flex justify-between items-center px-8 py-4">
-              <button onclick="resetGrams()" class="text-[10px] font-black text-red-400 uppercase">Reset</button>
-              <div class="text-5xl font-black text-slate-800 tracking-tighter"><span id="gramsDisplay">0</span><span class="text-sm text-amber-500 ml-1">G</span></div>
+      <footer class="bg-white px-8 pb-10 pt-4">
+          <div class="flex justify-between items-center mb-6">
+              <button onclick="reset()" class="text-slate-300 text-[9px] font-bold uppercase tracking-widest">Reset</button>
+              <div class="text-4xl font-bold text-slate-800 tracking-tighter"><span id="grams">0</span><span class="text-amber-500 text-sm ml-1 font-black">GR</span></div>
           </div>
-          <div class="ruler-container" id="ruler">
-              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-1.5 h-12 bg-amber-500 z-30 rounded-t-full shadow-lg"></div>
-              <div class="ruler-track" id="track"></div>
+          <div id="ruler">
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-[2px] h-14 bg-amber-500 z-50"></div>
+              <div id="track" class="track"></div>
           </div>
       </footer>
   </div>
 
 <script>
     const db = {
-        farina: { emoji: "🌾", kcal: 364, w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120, tazza: 140, pugno: 30 } },
-        olio: { emoji: "🫒", kcal: 884, w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180, tazza: 200, pugno: 10 } },
-        riso: { emoji: "🍚", kcal: 130, w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220, tazza: 250, pugno: 45 } },
-        zucchero: { emoji: "🍬", kcal: 387, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180, tazza: 200, pugno: 25 } },
-        pasta: { emoji: "🍝", kcal: 350, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 60, bicchiere: 100, tazza: 120, pugno: 40 } },
-        cacao: { emoji: "🍫", kcal: 228, w: { cucchiaio: 8, cucchiaino: 3, tazzina: 45, bicchiere: 90, tazza: 110, pugno: 20 } }
+        farina: { e: "🌾", k: 364, w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 } },
+        olio: { e: "🫒", k: 884, w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 } },
+        riso: { e: "🍚", k: 130, w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220 } },
+        zucchero: { e: "🍬", k: 387, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 } },
+        pasta: { e: "🍝", k: 350, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 60, bicchiere: 100 } }
     };
-    const toolIcons = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕', bicchiere: '🥃', tazza: '🥛', pugno: '✊' };
-    let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
-    let currentX = 0;
+    const tools = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕', bicchiere: '🥃' };
+    let state = { food: 'farina', tool: 'cucchiaio', g: 0, favs: [] };
+    let ctx = null, curX = 0, lastSnap = -1;
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSfx(f, t, d) {
-        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-        o.type = t; o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
-        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
-    }
+    function unlockAudio() { if(!ctx) ctx = new AudioContext(); if(ctx.state==='suspended') ctx.resume(); }
+    function softTic(f, v=0.05) { if(!ctx) return; let o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(f, ctx.currentTime); g.gain.setValueAtTime(v, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.05); }
 
     function init() {
-        const fGrid = document.getElementById('foodGrid');
-        Object.keys(db).forEach(k => {
-            const d = document.createElement('div');
-            d.id = 'food-' + k;
-            d.className = "p-4 bg-slate-50 rounded-2xl flex flex-col items-center grid-selection";
-            d.innerHTML = `<span class="text-3xl">${db[k].emoji}</span>`;
-            d.onclick = () => { selectFood(k); };
-            fGrid.appendChild(d);
-        });
-
-        const tGrid = document.getElementById('toolGrid');
-        Object.keys(toolIcons).forEach(k => {
-            const d = document.createElement('div');
-            d.id = 'tool-' + k;
-            d.className = "p-4 bg-slate-50 rounded-2xl flex flex-col items-center grid-selection";
-            d.innerHTML = `<span class="text-3xl">${toolIcons[k]}</span>`;
-            d.onclick = () => { selectTool(k); };
-            tGrid.appendChild(d);
-        });
-
-        const track = document.getElementById('track');
+        const tr = document.getElementById('track');
         for(let i=0; i<=500; i++) {
-            const t = document.createElement('div');
-            t.className = i%10===0 ? 'tack major' : 'tack';
-            if(i%10===0) t.setAttribute('data-val', i);
-            track.appendChild(t);
+            let t = document.createElement('div');
+            t.className = i%10===0 ? 'tack big' : 'tack';
+            t.id = 'tack-'+i;
+            tr.appendChild(t);
         }
-        setupRuler();
-        updateUI();
-    }
 
-    function selectFood(k) {
-        state.food = k;
-        navigator.vibrate?.(5);
-        updateUI();
-    }
-
-    function selectTool(k) {
-        state.tool = k;
-        navigator.vibrate?.(5);
-        updateUI();
-    }
-
-    function setupRuler() {
-        const r = document.getElementById('ruler');
-        let startX = 0, isDown = false;
-        r.ontouchstart = (e) => { isDown = true; startX = e.touches[0].clientX - currentX; };
-        window.addEventListener('touchmove', (e) => {
-            if (!isDown) return;
-            currentX = e.touches[0].clientX - startX;
-            if (currentX > 0) currentX = 0;
-            state.grams = Math.abs(Math.round(currentX/22));
-            updateUI();
-        });
-        window.addEventListener('touchend', () => isDown = false);
-    }
-
-    function updateUI() {
-        const f = db[state.food];
-        const tw = f.w[state.tool];
-        const units = state.grams / tw;
-        
-        // Update Testi
-        document.getElementById('intDisplay').innerText = Math.floor(units);
-        document.getElementById('gramsDisplay').innerText = state.grams;
-        document.getElementById('track').style.transform = `translateX(${currentX}px)`;
-        document.getElementById('mainEmoji').innerText = toolIcons[state.tool];
-        document.getElementById('toolLabel').innerText = state.tool;
-        document.getElementById('kcalDisplay').innerText = Math.round((f.kcal * state.grams) / 100) + " KCAL";
-        
-        // Update Liquid Progress
-        document.documentElement.style.setProperty('--p-level', ((units % 1) * 100) + '%');
-        
-        // UPDATE VISUALE SELEZIONE (Fix per il "casotto")
-        document.querySelectorAll('.grid-selection').forEach(el => el.classList.remove('active'));
-        document.getElementById('food-' + state.food).classList.add('active');
-        document.getElementById('tool-' + state.tool).classList.add('active');
-
-        if(state.grams > 0 && state.grams % tw === 0) { 
-            navigator.vibrate?.(15); 
-            playSfx(440, 'sine', 0.1); 
-        }
-    }
-
-    function recallFavorite(g) {
-        state.grams = g;
-        currentX = -(g * 22);
-        updateUI();
-        playSfx(600, 'sine', 0.2);
-    }
-
-    function saveFavorite() {
-        if(state.grams === 0) return;
-        state.favorites.unshift({ id: Date.now(), grams: state.grams, emoji: db[state.food].emoji });
-        playSfx(880, 'sine', 0.1);
-        renderFavorites();
-    }
-
-    function renderFavorites() {
-        const list = document.getElementById('favoritesList');
-        const zone = document.getElementById('drop-delete-zone');
-        list.innerHTML = '';
-        state.favorites.forEach(f => {
-            const div = document.createElement('div');
-            div.className = "fav-item";
-            div.innerHTML = `<span class="text-2xl block">${f.emoji}</span><span class="text-[10px] font-black">${f.grams}g</span>`;
+        let isD = false, sX = 0;
+        document.getElementById('ruler').addEventListener('touchstart', (e) => { isD = true; sX = e.touches[0].clientX - curX; unlockAudio(); }, {passive: true});
+        window.addEventListener('touchmove', (e) => { 
+            if(!isD) return;
+            let rawX = e.touches[0].clientX - sX;
+            if(rawX > 0) rawX = 0;
             
-            let sX, sY, moved = false;
-            div.ontouchstart = (e) => { 
-                sX = e.touches[0].clientX; sY = e.touches[0].clientY; 
-                moved = false;
-            };
-            div.ontouchmove = (e) => {
-                let dx = e.touches[0].clientX - sX;
-                let dy = e.touches[0].clientY - sY;
-                if (Math.abs(dy) > 10 || Math.abs(dx) > 10) {
-                    moved = true;
-                    div.classList.add('fav-dragging');
-                    zone.classList.add('visible');
-                    div.style.left = (e.touches[0].clientX - 40) + 'px';
-                    div.style.top = (e.touches[0].clientY - 40) + 'px';
+            let rawG = Math.abs(Math.round(rawX / 26.5)); // Step del righello
+            let tw = db[state.food].w[state.tool];
+            
+            // LOGICA MAGNETICA (SNAP)
+            let nearestSnap = Math.round(rawG / tw) * tw;
+            if(Math.abs(rawG - nearestSnap) < 4) { // Raggio magnetico
+                state.g = nearestSnap;
+                curX = -(nearestSnap * 26.5);
+                if(lastSnap !== nearestSnap) {
+                    softTic(3000, 0.1);
+                    navigator.vibrate?.(10);
+                    lastSnap = nearestSnap;
                 }
-            };
-            div.ontouchend = (e) => {
-                zone.classList.remove('visible');
-                if (!moved) recallFavorite(f.grams);
-                else if (e.changedTouches[0].clientY < 130) {
-                    state.favorites = state.favorites.filter(x => x.id !== f.id);
-                    playSfx(150, 'square', 0.2);
-                    renderFavorites();
+            } else {
+                state.g = rawG;
+                curX = rawX;
+                lastSnap = -1;
+            }
+            
+            requestAnimationFrame(update);
+        }, {passive: true});
+        window.addEventListener('touchend', () => isD = false);
+        
+        // Popola Grid e Modal (già ottimizzati)
+        Object.keys(db).forEach(k => {
+            let d = document.createElement('div'); d.className = "food-card"; d.id = "f-"+k;
+            d.innerHTML = `<span class="text-3xl block mb-2">${db[k].e}</span><span class="text-[7px] font-bold uppercase opacity-30 tracking-widest">${k}</span>`;
+            d.onclick = () => { state.food = k; update(); softTic(800); };
+            document.getElementById('grid').appendChild(d);
+        });
+        Object.keys(tools).forEach(k => {
+            let d = document.createElement('div'); d.className = "tool-option p-6 rounded-3xl mb-4 bg-white/5 border border-white/10 w-64 text-white text-center";
+            d.innerHTML = `${tools[k]} ${k.toUpperCase()}`;
+            d.onclick = (e) => { e.stopPropagation(); state.tool = k; update(); closeModal(); softTic(1200); };
+            document.getElementById('modal-list').appendChild(d);
+        });
+        update();
+    }
+
+    function update() {
+        const f = db[state.food], tw = f.w[state.tool], u = state.g / tw;
+        document.getElementById('dosi').innerText = Math.floor(u);
+        document.getElementById('grams').innerText = state.g;
+        document.getElementById('curEmoji').innerText = tools[state.tool];
+        document.getElementById('kcal').innerText = Math.round(f.k * state.g / 100) + " Calories";
+        document.getElementById('track').style.transform = `translate3d(${curX}px, 0, 0)`;
+        document.documentElement.style.setProperty('--p-level', (u%1*100)+'%');
+        
+        document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('f-'+state.food).classList.add('active');
+
+        // Aggiorna tacche magnetiche visive
+        document.querySelectorAll('.tack').forEach(t => t.classList.remove('snap-point'));
+        for(let i=0; i<=500; i+=tw) {
+            let el = document.getElementById('tack-'+i);
+            if(el) el.classList.add('snap-point');
+        }
+    }
+
+    function renderFavs() {
+        const list = document.getElementById('favs-list');
+        const trash = document.getElementById('drop-delete');
+        list.innerHTML = '';
+        state.favs.forEach(f => {
+            let d = document.createElement('div'); d.className = "fav-item";
+            d.innerHTML = `<span class="text-2xl block">${f.emoji}</span><span class="text-[9px] font-bold text-slate-400">${f.g}g</span>`;
+            
+            let ghost, isDragging = false;
+            d.addEventListener('touchstart', (e) => { unlockAudio(); }, {passive: true});
+            d.addEventListener('touchmove', (e) => {
+                if(!isDragging) { 
+                    isDragging = true; trash.classList.add('show');
+                    ghost = d.cloneNode(true); ghost.className = "fav-item drag-ghost";
+                    document.body.appendChild(ghost);
+                    d.style.opacity = "0.1";
                 }
-                div.classList.remove('fav-dragging');
-                div.style.position = 'relative'; div.style.left = '0'; div.style.top = '0';
-            };
-            list.appendChild(div);
+                // GPU ACCELERATED DRAG
+                ghost.style.transform = `translate3d(${e.touches[0].clientX - 40}px, ${e.touches[0].clientY - 40}px, 0) scale(1.1)`;
+                trash.classList.toggle('active-drop', e.touches[0].clientY > window.innerHeight - 160);
+            }, {passive: false});
+
+            d.addEventListener('touchend', (e) => {
+                trash.classList.remove('show', 'active-drop');
+                if(ghost) ghost.remove(); d.style.opacity = "1";
+                if(!isDragging) {
+                    state.food = f.foodKey; state.g = f.g; curX = -(f.g * 26.5); update(); softTic(1000);
+                } else if(e.changedTouches[0].clientY > window.innerHeight - 160) {
+                    state.favs = state.favs.filter(x => x.id !== f.id); renderFavs(); softTic(100);
+                }
+                isDragging = false;
+            });
+            list.appendChild(d);
         });
     }
 
-    function toggleCollapse(id) {
-        const el = document.getElementById(id);
-        el.classList.toggle('open');
-        document.getElementById(id + '-icon').innerText = el.classList.contains('open') ? '▼' : '▶';
-    }
-
-    function resetGrams() { currentX = 0; state.grams = 0; updateUI(); }
+    function saveFav() { if(state.g > 0) { state.favs.unshift({ id: Date.now(), g: state.g, foodKey: state.food, emoji: db[state.food].e }); renderFavs(); softTic(2000); } }
+    function reset() { curX = 0; state.g = 0; update(); softTic(150); }
+    function openModal(e) { e.stopPropagation(); document.getElementById('tool-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('tool-modal').style.display = 'none'; }
     init();
 </script>
 </body>
