@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
-  <title>Chef Academy 2026 Pro</title>
+  <title>Chef Academy 2026 - Ultra Stable</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -15,9 +15,6 @@
       overflow: hidden; height: 100vh; -webkit-user-select: none; user-select: none;
     }
     
-    .page { position: absolute; inset: 0; display: flex; flex-direction: column; height: 100%; }
-
-    /* OUTPUT AREA */
     .sticky-output { 
         position: relative; z-index: 1000; 
         background: #0f172a; border-radius: 0 0 2.8rem 2.8rem;
@@ -31,58 +28,46 @@
         transition: height 0.3s ease-out; z-index: 1;
     }
 
-    /* DRAG & DELETE ZONE - MASSIMO LAYER */
     #drop-delete-zone { 
         position: fixed; top: 0; width: 100%; height: 130px; 
-        background: #ef4444; z-index: 90000; /* Sotto l'elemento trascinato ma sopra tutto il resto */
+        background: #ef4444; z-index: 80000; 
         transform: translateY(-100%); display: flex; flex-direction: column; 
-        align-items: center; justify-content: center;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: white;
+        align-items: center; justify-content: center; color: white;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     #drop-delete-zone.visible { transform: translateY(0); }
 
-    /* FAV ITEM DRAGGING FIX */
     .fav-item { 
         background: white; border-radius: 1.2rem; padding: 12px;
         min-width: 78px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        touch-action: none; position: relative; z-index: 10;
+        touch-action: none; position: relative; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .fav-dragging { 
-        z-index: 99999 !important; /* SOPRA IL CESTINO */
-        position: fixed !important; 
-        pointer-events: none;
+        z-index: 99999 !important; position: fixed !important; 
+        pointer-events: none; transform: scale(1.2) !important;
         box-shadow: 0 40px 80px rgba(0,0,0,0.4) !important;
-        transform: scale(1.2) !important;
     }
 
-    /* COLLAPSIBLE FIX */
-    .collapsible-content { 
-        max-height: 0; overflow: hidden; 
-        transition: max-height 0.5s cubic-bezier(0, 1, 0, 1); 
-    }
-    .collapsible-content.open { max-height: 1000px; transition: max-height 0.8s ease-in; }
+    .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; }
+    .collapsible-content.open { max-height: 1000px; }
 
-    /* RULER */
     .ruler-container { position: relative; width: 100%; height: 75px; overflow: hidden; background: white; }
-    .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; }
+    .ruler-track { display: flex; align-items: flex-end; height: 100%; position: absolute; left: 50%; transition: transform 0.1s ease-out; }
     .tack { width: 2px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; height: 15px; }
     .tack.major { height: 38px; background: #94a3b8; position: relative; }
     .tack.major::after { content: attr(data-val); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: #94a3b8; }
-
-    .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body>
 
   <div id="drop-delete-zone">
-      <span class="text-4xl mb-1">🗑️</span>
-      <span class="text-[10px] font-black uppercase tracking-widest">Rilascia per eliminare</span>
+      <span class="text-4xl">🗑️</span>
+      <span class="text-[10px] font-black uppercase tracking-widest mt-2">Rilascia per eliminare</span>
   </div>
 
-  <div class="page">
-      <header class="p-5 flex justify-between items-center bg-[#0f172a]">
+  <div class="flex flex-col h-full">
+      <header class="p-5 bg-[#0f172a] flex justify-between items-center">
           <div class="text-white font-black italic text-lg tracking-tighter">CHEF<span class="text-amber-500">ACADEMY</span></div>
-          <span class="text-[8px] font-bold text-white/30 uppercase tracking-[0.4em]">v3.0.1 Stable</span>
       </header>
 
       <div class="sticky-output">
@@ -99,7 +84,7 @@
                   </div>
                   <p id="kcalDisplay" class="text-[10px] font-bold text-white/30 uppercase mt-2 tracking-widest">0 KCAL</p>
               </div>
-              <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-5 rounded-[2rem] shadow-2xl active:scale-95 transition-all">
+              <button onclick="saveFavorite()" class="bg-amber-500 text-slate-900 p-5 rounded-[2rem] shadow-2xl active:scale-90 transition-all">
                   <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 6v12m6-6H6"></path></svg>
               </button>
           </div>
@@ -108,16 +93,14 @@
       <main class="flex-1 overflow-y-auto no-scrollbar px-5 py-6 space-y-6">
           <div id="favoritesList" class="flex space-x-4 overflow-x-auto no-scrollbar min-h-[100px] items-center"></div>
 
-          <div class="space-y-4">
-              <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
-                  <button onclick="toggleCollapse('food-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ingredienti <span id="food-section-icon">▼</span></button>
-                  <div id="food-section" class="collapsible-content open"><div class="grid grid-cols-3 gap-3 p-3" id="foodGrid"></div></div>
-              </div>
+          <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
+              <button onclick="toggleCollapse('food-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ingredienti <span id="food-section-icon">▼</span></button>
+              <div id="food-section" class="collapsible-content open"><div class="grid grid-cols-3 gap-3 p-3" id="foodGrid"></div></div>
+          </div>
 
-              <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
-                  <button onclick="toggleCollapse('tool-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Dosatori <span id="tool-section-icon">▶</span></button>
-                  <div id="tool-section" class="collapsible-content"><div class="grid grid-cols-3 gap-3 p-3" id="toolGrid"></div></div>
-              </div>
+          <div class="bg-white rounded-[2.2rem] p-2 shadow-sm">
+              <button onclick="toggleCollapse('tool-section')" class="w-full flex justify-between p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Dosatori <span id="tool-section-icon">▶</span></button>
+              <div id="tool-section" class="collapsible-content"><div class="grid grid-cols-3 gap-3 p-3" id="toolGrid"></div></div>
           </div>
       </main>
 
@@ -133,57 +116,42 @@
       </footer>
   </div>
 
-  <script>
+<script>
     const db = {
-      farina: { name: "Farina", emoji: "🌾", kcal: 364, w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120, tazza: 140, pugno: 30 } },
-      olio: { name: "Olio", emoji: "🫒", kcal: 884, w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180, tazza: 200, pugno: 10 } },
-      riso: { name: "Riso", emoji: "🍚", kcal: 130, w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220, tazza: 250, pugno: 45 } },
-      zucchero: { name: "Zucchero", emoji: "🍬", kcal: 387, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180, tazza: 200, pugno: 25 } },
-      sale: { name: "Sale", emoji: "🧂", kcal: 0, w: { cucchiaio: 18, cucchiaino: 6, tazzina: 110, bicchiere: 250, tazza: 280, pugno: 35 } },
-      cacao: { name: "Cacao", emoji: "🍫", kcal: 228, w: { cucchiaio: 8, cucchiaino: 3, tazzina: 45, bicchiere: 90, tazza: 110, pugno: 20 } }
+        farina: { emoji: "🌾", kcal: 364, w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120, tazza: 140, pugno: 30 } },
+        olio: { emoji: "🫒", kcal: 884, w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180, tazza: 200, pugno: 10 } },
+        riso: { emoji: "🍚", kcal: 130, w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220, tazza: 250, pugno: 45 } },
+        zucchero: { emoji: "🍬", kcal: 387, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180, tazza: 200, pugno: 25 } }
     };
     const toolIcons = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕', bicchiere: '🥃', tazza: '🥛', pugno: '✊' };
-    
     let state = { food: 'farina', tool: 'cucchiaio', grams: 0, favorites: [] };
     let currentX = 0;
 
-    // AUDIO ENGINE
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(freq, type, dur) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + dur);
+    function playSfx(f, t, d) {
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = t; o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
     }
 
     function init() {
+        // Popolamento dinamico (Bug fix: aggiunto stile active visibile)
         const fGrid = document.getElementById('foodGrid');
         Object.keys(db).forEach(k => {
-            const div = document.createElement('div');
-            div.className = `p-4 flex flex-col items-center bg-slate-50 rounded-2xl border-2 border-transparent transition-all`;
-            div.innerHTML = `<span class="text-3xl mb-1">${db[k].emoji}</span><span class="text-[9px] font-black uppercase text-slate-500">${db[k].name}</span>`;
-            div.onclick = () => { 
-                state.food = k; updateUI(); 
-                document.querySelectorAll('#foodGrid > div').forEach(i => i.style.borderColor = 'transparent');
-                div.style.borderColor = '#fbbf24';
-            };
-            fGrid.appendChild(div);
+            const d = document.createElement('div');
+            d.className = "p-4 bg-slate-50 rounded-2xl flex flex-col items-center border-2 border-transparent";
+            d.innerHTML = `<span class="text-3xl">${db[k].emoji}</span>`;
+            d.onclick = () => { state.food = k; updateUI(); };
+            fGrid.appendChild(d);
         });
 
         const tGrid = document.getElementById('toolGrid');
         Object.keys(toolIcons).forEach(k => {
-            const div = document.createElement('div');
-            div.className = `p-4 flex flex-col items-center bg-slate-50 rounded-2xl border-2 border-transparent transition-all`;
-            div.innerHTML = `<span class="text-3xl mb-1">${toolIcons[k]}</span><span class="text-[9px] font-black uppercase text-slate-500">${k}</span>`;
-            div.onclick = () => { 
-                state.tool = k; updateUI(); 
-                document.querySelectorAll('#toolGrid > div').forEach(i => i.style.borderColor = 'transparent');
-                div.style.borderColor = '#fbbf24';
-            };
-            tGrid.appendChild(div);
+            const d = document.createElement('div');
+            d.className = "p-4 bg-slate-50 rounded-2xl flex flex-col items-center border-2 border-transparent";
+            d.innerHTML = `<span class="text-3xl">${toolIcons[k]}</span>`;
+            d.onclick = () => { state.tool = k; updateUI(); };
+            tGrid.appendChild(d);
         });
 
         const track = document.getElementById('track');
@@ -203,15 +171,11 @@
         r.ontouchstart = (e) => { isDown = true; startX = e.touches[0].clientX - currentX; };
         window.addEventListener('touchmove', (e) => {
             if (!isDown) return;
-            let x = e.touches[0].clientX - startX;
-            if (x > 0) x = 0;
-            currentX = x;
-            let newGrams = Math.abs(Math.round(x/22));
-            if(newGrams !== state.grams) {
-                state.grams = newGrams;
-                updateUI();
-            }
-        }, { passive: false });
+            currentX = e.touches[0].clientX - startX;
+            if (currentX > 0) currentX = 0;
+            state.grams = Math.abs(Math.round(currentX/22));
+            updateUI();
+        });
         window.addEventListener('touchend', () => isDown = false);
     }
 
@@ -219,28 +183,27 @@
         const f = db[state.food];
         const tw = f.w[state.tool];
         const units = state.grams / tw;
-        const perc = (units % 1) * 100;
-
         document.getElementById('intDisplay').innerText = Math.floor(units);
         document.getElementById('gramsDisplay').innerText = state.grams;
         document.getElementById('track').style.transform = `translateX(${currentX}px)`;
-        document.getElementById('kcalDisplay').innerText = Math.round((f.kcal * state.grams) / 100) + " KCAL";
         document.getElementById('mainEmoji').innerText = toolIcons[state.tool];
         document.getElementById('toolLabel').innerText = state.tool;
-        
-        document.documentElement.style.setProperty('--p-level', (perc === 0 && units > 0 ? 100 : perc) + '%');
-        
-        // Haptic + Sound on full dose
-        if(state.grams > 0 && state.grams % tw === 0) {
-            navigator.vibrate?.(15);
-            playSound(440, 'sine', 0.05);
-        }
+        document.documentElement.style.setProperty('--p-level', ((units % 1) * 100) + '%');
+        if(state.grams > 0 && state.grams % tw === 0) { navigator.vibrate?.(10); playSfx(400, 'sine', 0.1); }
+    }
+
+    // FIX: RICHIAMO PREFERITO
+    function recallFavorite(g) {
+        state.grams = g;
+        currentX = -(g * 22);
+        playSfx(600, 'sine', 0.2);
+        updateUI();
     }
 
     function saveFavorite() {
         if(state.grams === 0) return;
         state.favorites.unshift({ id: Date.now(), grams: state.grams, emoji: db[state.food].emoji });
-        playSound(880, 'sine', 0.1);
+        playSfx(800, 'sine', 0.1);
         renderFavorites();
     }
 
@@ -253,35 +216,34 @@
             div.className = "fav-item";
             div.innerHTML = `<span class="text-2xl block">${f.emoji}</span><span class="text-[10px] font-black">${f.grams}g</span>`;
             
-            let sX, sY, rect;
+            let sX, sY, moved = false;
             div.ontouchstart = (e) => { 
-                rect = div.getBoundingClientRect();
-                sX = e.touches[0].clientX - rect.left;
-                sY = e.touches[0].clientY - rect.top;
-                div.classList.add('fav-dragging');
-                div.style.left = rect.left + 'px';
-                div.style.top = rect.top + 'px';
-                zone.classList.add('visible'); 
-                navigator.vibrate?.(5);
+                const r = div.getBoundingClientRect();
+                sX = e.touches[0].clientX; sY = e.touches[0].clientY; 
+                moved = false;
             };
-            div.ontouchmove = (e) => { 
-                e.preventDefault();
-                div.style.left = (e.touches[0].clientX - sX) + 'px';
-                div.style.top = (e.touches[0].clientY - sY) + 'px';
-                if(e.touches[0].clientY < 130) zone.style.background = "#ff0000";
-                else zone.style.background = "#ef4444";
+            div.ontouchmove = (e) => {
+                let dx = e.touches[0].clientX - sX;
+                let dy = e.touches[0].clientY - sY;
+                if (Math.abs(dy) > 10 || Math.abs(dx) > 10) {
+                    moved = true;
+                    div.classList.add('fav-dragging');
+                    zone.classList.add('visible');
+                    div.style.left = (e.touches[0].clientX - 40) + 'px';
+                    div.style.top = (e.touches[0].clientY - 40) + 'px';
+                }
             };
             div.ontouchend = (e) => {
                 zone.classList.remove('visible');
-                if(e.changedTouches[0].clientY < 130) {
+                if (!moved) {
+                    recallFavorite(f.grams); // CLICK FUNZIONANTE
+                } else if (e.changedTouches[0].clientY < 130) {
                     state.favorites = state.favorites.filter(x => x.id !== f.id);
-                    playSound(150, 'sawtooth', 0.2);
+                    playSfx(100, 'square', 0.2);
                     renderFavorites();
-                } else { 
-                    div.classList.remove('fav-dragging');
-                    div.style.position = 'relative';
-                    div.style.left = '0'; div.style.top = '0';
                 }
+                div.classList.remove('fav-dragging');
+                div.style.position = 'relative'; div.style.left = '0'; div.style.top = '0';
             };
             list.appendChild(div);
         });
@@ -289,14 +251,12 @@
 
     function toggleCollapse(id) {
         const el = document.getElementById(id);
-        const icon = document.getElementById(id + '-icon');
-        const isOpen = el.classList.contains('open');
         el.classList.toggle('open');
-        icon.innerText = isOpen ? '▶' : '▼';
+        document.getElementById(id + '-icon').innerText = el.classList.contains('open') ? '▼' : '▶';
     }
 
     function resetGrams() { currentX = 0; state.grams = 0; updateUI(); }
     init();
-  </script>
+</script>
 </body>
 </html>
