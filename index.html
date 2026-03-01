@@ -3,44 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Chef Academy 2026 - Touch Reset</title>
+  <title>Chef Academy 2026 - Premium Build</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
     :root { --p-level: 0%; }
-    /* RIMOSSO touch-action: none dal body per sbloccare i tasti */
-    body { font-family: sans-serif; background: #f1f5f9; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; margin: 0; overflow: hidden; height: 100vh; }
     
-    .header-box { position: relative; z-index: 100; background: #0f172a; padding: 1.2rem; color: white; border-radius: 0 0 2rem 2rem; }
-    .liquid-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--p-level); background: rgba(251,191,36,0.2); z-index: 1; pointer-events: none; }
+    .header-box { position: relative; z-index: 100; background: #0f172a; padding: 1.5rem; color: white; border-radius: 0 0 2.5rem 2.5rem; shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+    .liquid-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--p-level); background: linear-gradient(0deg, rgba(251,191,36,0.2) 0%, rgba(251,191,36,0) 100%); z-index: 1; pointer-events: none; transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    /* MODAL INFALLIBILE */
+    /* MODAL SELECTION */
     #tool-modal {
         position: fixed; inset: 0; background: rgba(15,23,42,0.98);
         z-index: 99999; display: none; flex-direction: column;
-        align-items: center; justify-content: center; padding: 2rem;
+        align-items: center; justify-content: center; padding: 2rem; backdrop-filter: blur(10px);
     }
     .tool-option {
-        background: #1e293b; width: 80%; margin: 8px; padding: 20px;
-        border-radius: 20px; color: white; text-align: center; border: 2px solid #334155;
+        background: rgba(255,255,255,0.05); width: 90%; max-width: 320px; margin: 0.5rem; padding: 1.2rem;
+        border-radius: 1.5rem; color: white; text-align: center; border: 2px solid rgba(255,255,255,0.1);
+        transition: all 0.2s;
     }
+    .tool-option.active { border-color: #fbbf24; background: rgba(251,191,36,0.1); }
 
-    /* RIGHELLO - L'UNICO CON TOUCH-ACTION NONE */
-    #ruler { 
-        position: relative; height: 80px; background: white; 
-        overflow: hidden; touch-action: none; border-top: 1px solid #e2e8f0;
-    }
+    /* RULER */
+    #ruler { position: relative; height: 90px; background: white; overflow: hidden; touch-action: none; border-top: 1px solid #f1f5f9; }
     .track { display: flex; align-items: flex-end; position: absolute; left: 50%; height: 100%; pointer-events: none; }
-    .tack { width: 2px; height: 20px; background: #cbd5e1; margin-right: 20px; flex-shrink: 0; }
-    .tack.big { height: 40px; background: #64748b; }
+    .tack { width: 2px; height: 20px; background: #e2e8f0; margin-right: 20px; flex-shrink: 0; }
+    .tack.big { height: 45px; background: #94a3b8; position: relative; }
+    .tack.big::after { content: attr(data-v); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: #94a3b8; }
 
-    .food-card { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 2px solid transparent; }
-    .food-card.active { border-color: #fbbf24; background: #fffbeb; }
+    .food-card { background: white; padding: 1.2rem; border-radius: 1.8rem; text-align: center; border: 2px solid transparent; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); transition: all 0.2s; }
+    .food-card.active { border-color: #fbbf24; background: #fffbeb; transform: scale(1.02); }
+
+    /* FAVORITES */
+    .fav-item { background: white; padding: 0.8rem; border-radius: 1.2rem; min-width: 80px; text-align: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    #drop-delete { position: fixed; top: 0; width: 100%; height: 100px; background: #ef4444; z-index: 10000; transform: translateY(-100%); transition: 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
+    #drop-delete.show { transform: translateY(0); }
   </style>
 </head>
 <body onclick="unlockAudio()">
 
+  <div id="drop-delete">TRASCINA QUI PER ELIMINARE 🗑️</div>
+
   <div id="tool-modal" onclick="closeModal()">
-      <div class="text-amber-500 font-bold mb-4">SELEZIONA UTENSILE</div>
+      <div class="text-amber-500 font-black tracking-tighter text-xl mb-6">SCEGLI DOSATORE</div>
       <div id="modal-list" class="w-full flex flex-col items-center"></div>
   </div>
 
@@ -48,28 +55,34 @@
       <div class="header-box">
           <div class="liquid-bg" id="liquid"></div>
           <div class="relative z-10 flex justify-between items-center">
-              <div id="btn-cambia" onclick="openModal(event)" style="cursor: pointer; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 15px; border: 1px solid rgba(255,255,255,0.2);">
-                  <div id="curEmoji" class="text-3xl">🥄</div>
-                  <div class="text-[10px] font-bold text-amber-500 uppercase">Cambia</div>
+              <div onclick="openModal(event)" class="bg-white/10 p-4 rounded-3xl border border-white/10 text-center min-w-[100px] active:scale-95 transition-transform cursor-pointer">
+                  <div id="curEmoji" class="text-4xl mb-1">🥄</div>
+                  <div id="curLabel" class="text-[8px] font-black text-amber-500 uppercase tracking-widest">Cucchiaio</div>
               </div>
               
-              <div class="flex-1 text-right">
-                  <div class="text-5xl font-black"><span id="dosi">0</span><span class="text-sm text-amber-500"> DOSI</span></div>
+              <div class="flex-1 text-right pr-2">
+                  <div class="text-6xl font-black italic tracking-tighter"><span id="dosi">0</span><span class="text-sm text-amber-500 ml-1">DOSI</span></div>
+                  <div id="kcal" class="text-[10px] font-bold opacity-30 uppercase tracking-widest">0 KCAL</div>
               </div>
+
+              <button onclick="saveFav()" class="bg-amber-500 text-slate-900 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 6v12m6-6H6"/></svg>
+              </button>
           </div>
       </div>
 
-      <main class="flex-1 overflow-y-auto p-4 space-y-4" onclick="closeModal()">
-          <div class="grid grid-cols-3 gap-3" id="grid"></div>
+      <main class="flex-1 overflow-y-auto p-5 space-y-6">
+          <div id="favs-list" class="flex gap-4 overflow-x-auto no-scrollbar min-h-[90px] items-center"></div>
+          <div class="grid grid-cols-3 gap-4" id="grid"></div>
       </main>
 
-      <footer class="bg-white">
-          <div class="p-4 flex justify-between items-center">
-              <button onclick="reset()" class="text-red-500 text-xs font-bold uppercase">Reset</button>
-              <div class="text-3xl font-bold"><span id="grams">0</span>g</div>
+      <footer class="bg-white shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+          <div class="px-8 py-4 flex justify-between items-center">
+              <button onclick="reset()" class="text-red-400 text-[10px] font-black uppercase tracking-widest">Reset</button>
+              <div class="text-4xl font-black text-slate-800 tracking-tighter"><span id="grams">0</span><span class="text-amber-500 text-lg ml-1 uppercase">g</span></div>
           </div>
           <div id="ruler">
-              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-1 h-10 bg-amber-500 z-50"></div>
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-1.5 h-12 bg-amber-500 z-50 rounded-t-full shadow-lg"></div>
               <div id="track" class="track"></div>
           </div>
       </footer>
@@ -77,81 +90,97 @@
 
 <script>
     const db = {
-        farina: { e: "🌾", w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60 } },
-        olio: { e: "🫒", w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80 } },
-        riso: { e: "🍚", w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90 } }
+        farina: { e: "🌾", k: 364, w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 } },
+        olio: { e: "🫒", k: 884, w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 } },
+        riso: { e: "🍚", k: 130, w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220 } },
+        zucchero: { e: "🍬", k: 387, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 } },
+        pasta: { e: "🍝", k: 350, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 60, bicchiere: 100 } }
     };
-    const tools = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕' };
-    let state = { food: 'farina', tool: 'cucchiaio', g: 0 };
+    const tools = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕', bicchiere: '🥃' };
+    let state = { food: 'farina', tool: 'cucchiaio', g: 0, favs: [] };
     let ctx = null, curX = 0;
 
-    function unlockAudio() { if(!ctx) ctx = new AudioContext(); if(ctx.state==='suspended') ctx.resume(); }
+    function unlockAudio() { if(!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); }
+    function beep(f, d, t='sine') { if(!ctx) return; let o=ctx.createOscillator(), g=ctx.createGain(); o.type=t; o.frequency.value=f; g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+d); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+d); }
 
-    function openModal(e) { 
-        e.preventDefault();
-        e.stopPropagation(); 
-        document.getElementById('tool-modal').style.display = 'flex'; 
-    }
+    function openModal(e) { e.preventDefault(); e.stopPropagation(); document.getElementById('tool-modal').style.display = 'flex'; beep(800, 0.1); }
     function closeModal() { document.getElementById('tool-modal').style.display = 'none'; }
 
     function init() {
-        // Popola Ingredienti
         const g = document.getElementById('grid');
         Object.keys(db).forEach(k => {
             let d = document.createElement('div');
-            d.className = "food-card";
-            d.innerHTML = `<span class="text-3xl">${db[k].e}</span>`;
-            d.onclick = (e) => { e.stopPropagation(); state.food = k; update(); };
-            d.id = "f-"+k;
+            d.className = "food-card"; d.id = "f-"+k;
+            d.innerHTML = `<span class="text-4xl block mb-2">${db[k].e}</span><span class="text-[8px] font-extrabold uppercase text-slate-400 tracking-tighter">${k}</span>`;
+            d.onclick = (e) => { e.stopPropagation(); state.food = k; update(); beep(500, 0.1); };
             g.appendChild(d);
         });
 
-        // Popola Modal
         const ml = document.getElementById('modal-list');
         Object.keys(tools).forEach(k => {
             let d = document.createElement('div');
-            d.className = "tool-option";
-            d.innerHTML = `${tools[k]} ${k.toUpperCase()}`;
-            d.onclick = (e) => { e.stopPropagation(); state.tool = k; update(); closeModal(); };
+            d.className = "tool-option"; d.id = "topt-"+k;
+            d.innerHTML = `<span class="text-2xl mr-3">${tools[k]}</span><span class="font-bold uppercase tracking-widest text-xs">${k}</span>`;
+            d.onclick = (e) => { e.stopPropagation(); state.tool = k; update(); closeModal(); beep(1000, 0.1); };
             ml.appendChild(d);
         });
 
-        // Setup Ruler
         const tr = document.getElementById('track');
         for(let i=0; i<=500; i++) {
             let t = document.createElement('div');
             t.className = i%10===0 ? 'tack big' : 'tack';
+            if(i%10===0) t.setAttribute('data-v', i);
             tr.appendChild(t);
         }
 
         let isD = false, sX = 0;
         const r = document.getElementById('ruler');
-        r.addEventListener('touchstart', (e) => { isD = true; sX = e.touches[0].clientX - curX; }, {passive: true});
+        r.addEventListener('touchstart', (e) => { isD = true; sX = e.touches[0].clientX - curX; unlockAudio(); }, {passive: true});
         window.addEventListener('touchmove', (e) => { 
-            if(!isD) return; 
-            curX = e.touches[0].clientX - sX; 
-            if(curX>0) curX=0; 
-            state.g = Math.abs(Math.round(curX/20)); 
-            update(); 
+            if(!isD) return; curX = e.touches[0].clientX - sX; 
+            if(curX>0) curX=0; state.g = Math.abs(Math.round(curX/20)); update(); 
         }, {passive: true});
         window.addEventListener('touchend', () => isD = false);
-
         update();
     }
 
     function update() {
-        const f = db[state.food];
-        const tw = f.w[state.tool];
-        document.getElementById('dosi').innerText = Math.floor(state.g / tw);
+        const f = db[state.food], tw = f.w[state.tool], u = state.g / tw;
+        document.getElementById('dosi').innerText = Math.floor(u);
         document.getElementById('grams').innerText = state.g;
         document.getElementById('curEmoji').innerText = tools[state.tool];
+        document.getElementById('curLabel').innerText = state.tool;
+        document.getElementById('kcal').innerText = Math.round(f.k * state.g / 100) + " KCAL";
         document.getElementById('track').style.transform = `translateX(${curX}px)`;
-        document.documentElement.style.setProperty('--p-level', ((state.g/tw)%1*100)+'%');
+        document.documentElement.style.setProperty('--p-level', (u%1*100)+'%');
+        
         document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
         document.getElementById('f-'+state.food).classList.add('active');
+        document.querySelectorAll('.tool-option').forEach(o => o.classList.remove('active'));
+        document.getElementById('topt-'+state.tool).classList.add('active');
+
+        if(state.g > 0 && state.g % tw === 0) { beep(440, 0.15, 'square'); navigator.vibrate?.(15); }
     }
 
-    function reset() { curX = 0; state.g = 0; update(); }
+    function saveFav() {
+        if(state.g === 0) return;
+        state.favs.unshift({ id: Date.now(), g: state.g, e: db[state.food].e });
+        renderFavs(); beep(1200, 0.1);
+    }
+
+    function renderFavs() {
+        const l = document.getElementById('favs-list');
+        l.innerHTML = '';
+        state.favs.forEach(f => {
+            let d = document.createElement('div');
+            d.className = "fav-item";
+            d.innerHTML = `<span class="text-2xl block">${f.e}</span><span class="text-[10px] font-black">${f.g}g</span>`;
+            d.onclick = () => { state.g = f.g; curX = -(f.g * 20); update(); beep(600, 0.1); };
+            l.appendChild(d);
+        });
+    }
+
+    function reset() { curX = 0; state.g = 0; update(); beep(200, 0.2, 'sawtooth'); }
     init();
 </script>
 </body>
