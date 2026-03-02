@@ -3,71 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Chef Academy 2026 - Precision Centered</title>
+  <title>Chef Academy 2026 - Ultra Fluid</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet" />
   <style>
-    :root { --p-level: 0%; --accent: #fbbf24; }
+    :root { --p-level: 0%; --accent: #fbbf24; --swipe: 0px; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; margin: 0; overflow: hidden; height: 100vh; user-select: none; color: #f8fafc; }
     
-    .header-box { position: relative; z-index: 50; background: #0f172a; padding: 1.5rem; border-radius: 0 0 2.5rem 2.5rem; }
-    .liquid-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--p-level); background: linear-gradient(0deg, rgba(251,191,36,0.08) 0%, rgba(251,191,36,0) 100%); z-index: 1; pointer-events: none; transition: height 0.4s ease-out; }
-
-    .food-nav { display: flex; gap: 1rem; overflow-x: auto; padding: 1rem 1.5rem; scroll-behavior: smooth; }
-    .food-chip { 
-        flex-shrink: 0; background: #1e293b; padding: 0.8rem 1.2rem; border-radius: 1.5rem; 
-        display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.05);
-        transition: 0.3s; opacity: 0.6;
-    }
-    .food-chip.active { opacity: 1; background: #334155; border-color: var(--accent); transform: scale(1.05); }
-
-    #tool-modal { position: fixed; inset: 0; background: rgba(2,6,23,0.98); z-index: 1000000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
-
-    #ruler { position: relative; height: 60px; touch-action: none; }
-    .track { display: flex; align-items: flex-end; position: absolute; left: 50%; height: 100%; pointer-events: none; }
-    .tack { width: 1.5px; height: 10px; background: #334155; margin-right: 24px; flex-shrink: 0; }
-    .tack.big { height: 20px; background: #64748b; }
-    .tack.snap-point { background: var(--accent) !important; height: 30px !important; box-shadow: 0 0 10px var(--accent); }
-
-    /* FIX SWIPE DELETE */
-    .fav-wrapper { position: relative; min-width: 140px; height: 100px; overflow: hidden; border-radius: 2rem; flex-shrink: 0; }
-    .fav-item { 
-        position: relative; z-index: 2; background: #1e293b; width: 100%; height: 100%; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        border: 1px solid rgba(255,255,255,0.05); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        border-radius: 2rem; touch-action: pan-x;
-    }
-    .del-btn { 
-        position: absolute; top: 0; right: 0; width: 100%; height: 100%; background: #ef4444; 
-        color: white; display: flex; align-items: center; justify-content: flex-end;
-        padding-right: 20px; font-weight: 800; font-size: 10px; border-radius: 2rem; z-index: 1;
-        text-transform: uppercase;
-    }
+    .header-box { position: relative; z-index: 50; background: #0f172a; padding: 1.5rem; border-radius: 0 0 2.8rem 2.8rem; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
     
+    /* Decimale Pulsante */
+    #decimal.pulse { text-shadow: 0 0 15px var(--accent); transform: scale(1.1); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    .food-nav { display: flex; gap: 0.8rem; overflow-x: auto; padding: 1.2rem 1.5rem; }
+    .food-chip { 
+        flex-shrink: 0; background: rgba(30, 41, 59, 0.5); padding: 0.7rem 1.1rem; border-radius: 1.2rem; 
+        display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.03);
+        transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1); backdrop-filter: blur(10px);
+    }
+    .food-chip.active { background: var(--accent); color: #020617; transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 20px rgba(251,191,36,0.2); }
+
+    /* SWIPE REVEAL 2026 */
+    .fav-wrapper { position: relative; min-width: 130px; height: 95px; border-radius: 1.8rem; flex-shrink: 0; overflow: hidden; background: #ef4444; }
+    .fav-item { 
+        position: relative; z-index: 10; background: #1e293b; width: 100%; height: 100%; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        border: 1px solid rgba(255,255,255,0.05); border-radius: 1.8rem;
+        transform: translate3d(var(--swipe), 0, 0);
+        transition: transform 0.1s linear; /* Velocità in tempo reale durante il tocco */
+    }
+    .fav-item.returning { transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1); }
+    
+    .del-label { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: white; font-weight: 800; font-size: 9px; text-transform: uppercase; z-index: 1; }
+
+    /* RULER ULTRA SLIM */
+    #ruler { position: relative; height: 50px; touch-action: none; margin-top: 1rem; }
+    .track { display: flex; align-items: flex-end; position: absolute; left: 50%; height: 100%; pointer-events: none; }
+    .tack { width: 1.5px; height: 8px; background: #334155; margin-right: 24px; flex-shrink: 0; }
+    .tack.big { height: 18px; background: #475569; }
+    .tack.snap-point { background: var(--accent) !important; height: 26px !important; box-shadow: 0 0 8px var(--accent); }
+
     .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body onclick="unlockAudio()">
 
-  <div id="tool-modal" onclick="closeModal()">
+  <div id="tool-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-2xl z-[1000] hidden flex-col items-center justify-center" onclick="closeModal()">
       <div id="modal-list" class="w-full flex flex-col items-center gap-4"></div>
   </div>
 
   <div class="flex flex-col h-full">
       <div class="header-box">
-          <div class="liquid-bg" id="liquid"></div>
           <div class="relative z-10 flex justify-between items-center">
-              <div onclick="openModal(event)" class="bg-white/5 p-4 rounded-3xl border border-white/10 text-center min-w-[70px]">
+              <div onclick="openModal(event)" class="bg-white/5 p-4 rounded-3xl border border-white/10 active:scale-90 transition-transform">
                   <div id="curEmoji" class="text-3xl">🥄</div>
               </div>
 
               <div class="flex-1 flex justify-center items-baseline">
-                <span id="dosi" class="text-7xl font-bold tracking-tighter text-white">0</span>
-                <span class="text-4xl text-amber-500 font-bold">.</span>
-                <span id="decimal" class="text-4xl text-amber-500 font-medium">0</span>
+                <span id="dosi" class="text-7xl font-extrabold tracking-tighter text-white">0</span>
+                <span class="text-4xl text-amber-500 font-black">.</span>
+                <span id="decimal" class="text-4xl text-amber-500 font-bold">0</span>
               </div>
 
-              <button onclick="saveFav()" class="bg-amber-500 text-slate-900 w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-75 transition-all">
+              <button onclick="saveFav()" class="bg-amber-500 text-slate-900 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.3)] active:scale-75 transition-all">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 4v16m8-8H4"/></svg>
               </button>
           </div>
@@ -75,17 +73,17 @@
 
       <nav class="food-nav no-scrollbar" id="food-nav"></nav>
 
-      <main class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-          <div id="favs-list" class="flex gap-4 overflow-x-auto pb-4 no-scrollbar min-h-[110px] items-center"></div>
+      <main class="flex-1 p-6 space-y-6 overflow-hidden">
+          <div id="favs-list" class="flex gap-4 overflow-x-auto pb-6 no-scrollbar min-h-[120px] items-center"></div>
       </main>
 
       <footer class="bg-[#0f172a] px-8 pb-10 pt-4 border-t border-white/5">
-          <div class="flex justify-between items-center mb-6">
-              <button onclick="reset()" class="text-slate-500 text-[9px] font-black uppercase tracking-widest">Reset</button>
-              <div class="text-3xl font-bold text-white tracking-tighter"><span id="grams">0</span><span class="text-amber-500 text-sm ml-1">GR</span></div>
+          <div class="flex justify-between items-center mb-4">
+              <button onclick="reset()" class="text-slate-600 text-[9px] font-black uppercase tracking-widest">Reset</button>
+              <div class="text-3xl font-bold text-white tracking-tighter"><span id="grams">0</span><span class="text-amber-500 text-xs ml-1 font-black">GR</span></div>
           </div>
           <div id="ruler">
-              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-[2px] h-10 bg-amber-500 z-50 rounded-full shadow-lg"></div>
+              <div class="absolute left-1/2 -translate-x-1/2 bottom-0 w-[2px] h-8 bg-amber-500 z-50 rounded-full"></div>
               <div id="track" class="track"></div>
           </div>
       </footer>
@@ -101,7 +99,7 @@
     };
     const tools = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕', bicchiere: '🥃' };
     let state = { food: 'farina', tool: 'cucchiaio', g: 0, favs: [] };
-    let ctx = null, curX = 0, lastSnap = -1;
+    let ctx = null, curX = 0;
 
     function unlockAudio() { if(!ctx) ctx = new AudioContext(); if(ctx.state==='suspended') ctx.resume(); }
     function softTic(f, v=0.05) { if(!ctx) return; let o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(f, ctx.currentTime); g.gain.setValueAtTime(v, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.05); }
@@ -129,24 +127,25 @@
             if(Math.abs(rawG - nearestSnap) < 3) {
                 state.g = nearestSnap;
                 curX = -(nearestSnap * 24);
-                if(lastSnap !== nearestSnap) { softTic(3000, 0.1); lastSnap = nearestSnap; }
-            } else { state.g = rawG; curX = rawX; lastSnap = -1; }
+                if(state.lastVal !== nearestSnap) { 
+                    softTic(nearestSnap % tw === 0 ? 3000 : 1500, 0.08); 
+                    state.lastVal = nearestSnap; 
+                }
+            } else { state.g = rawG; curX = rawX; }
             requestAnimationFrame(update);
         }, {passive: true});
         window.addEventListener('touchend', () => isD = false);
         
         const nav = document.getElementById('food-nav');
         Object.keys(db).forEach(k => {
-            let chip = document.createElement('div');
-            chip.className = "food-chip";
-            chip.id = "f-"+k;
+            let chip = document.createElement('div'); chip.className = "food-chip"; chip.id = "f-"+k;
             chip.innerHTML = `<span>${db[k].e}</span><span class="text-[10px] font-bold uppercase">${k}</span>`;
             chip.onclick = () => { state.food = k; update(); softTic(800); };
             nav.appendChild(chip);
         });
 
         Object.keys(tools).forEach(k => {
-            let d = document.createElement('div'); d.className = "p-6 rounded-3xl bg-slate-800 text-white w-64 text-center font-bold";
+            let d = document.createElement('div'); d.className = "p-6 rounded-3xl bg-slate-900 border border-white/5 text-white w-64 text-center font-bold active:scale-95 transition-transform";
             d.innerHTML = `${tools[k]} ${k.toUpperCase()}`;
             d.onclick = (e) => { e.stopPropagation(); state.tool = k; update(); closeModal(); softTic(1200); };
             document.getElementById('modal-list').appendChild(d);
@@ -156,14 +155,23 @@
 
     function update() {
         const f = db[state.food], tw = f.w[state.tool], u = state.g / tw;
+        const decVal = (u % 1 === 0) ? '0' : '5';
+        
         document.getElementById('dosi').innerText = Math.floor(u);
-        document.getElementById('decimal').innerText = (u % 1 === 0) ? '0' : '5';
+        const decEl = document.getElementById('decimal');
+        if(decEl.innerText !== decVal) {
+            decEl.innerText = decVal;
+            decEl.classList.add('pulse');
+            setTimeout(() => decEl.classList.remove('pulse'), 200);
+        }
+        
         document.getElementById('grams').innerText = state.g;
         document.getElementById('curEmoji').innerText = tools[state.tool];
         document.getElementById('track').style.transform = `translate3d(${curX}px, 0, 0)`;
-        document.documentElement.style.setProperty('--p-level', (u%1*100)+'%');
+        
         document.querySelectorAll('.food-chip').forEach(c => c.classList.remove('active'));
         document.getElementById('f-'+state.food).classList.add('active');
+        
         document.querySelectorAll('.tack').forEach(t => t.classList.remove('snap-point'));
         for(let i=0; i<=500; i+=tw/2) {
             let el = document.getElementById('tack-'+i);
@@ -175,36 +183,40 @@
         const list = document.getElementById('favs-list');
         list.innerHTML = '';
         state.favs.forEach(f => {
-            const wrapper = document.createElement('div');
-            wrapper.className = "fav-wrapper";
-            wrapper.innerHTML = `
-                <div class="del-btn" onclick="deleteFav(${f.id})">Elimina</div>
-                <div class="fav-item" id="fav-${f.id}">
-                    <span class="text-3xl">${f.emoji}</span>
-                    <span class="text-[12px] font-extrabold text-white">${f.g}g</span>
-                </div>
-            `;
+            const wrap = document.createElement('div'); wrap.className = "fav-wrapper";
+            wrap.innerHTML = `<div class="del-label">Rimuovi</div><div class="fav-item" id="fav-${f.id}"><span class="text-3xl">${f.emoji}</span><span class="text-[12px] font-extrabold">${f.g}g</span></div>`;
             
-            const item = wrapper.querySelector('.fav-item');
-            let startX = 0, currentX = 0, isDragging = false;
+            const item = wrap.querySelector('.fav-item');
+            let startX = 0, currentSwipe = 0, isScrolling = false;
 
-            item.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = false; }, {passive: true});
+            item.addEventListener('touchstart', e => { 
+                startX = e.touches[0].clientX; 
+                item.classList.remove('returning');
+                isScrolling = false;
+            }, {passive: true});
+
             item.addEventListener('touchmove', e => {
                 let diff = e.touches[0].clientX - startX;
-                if (Math.abs(diff) > 10) isDragging = true;
-                currentX = Math.max(-80, Math.min(0, diff));
-                item.style.transform = `translate3d(${currentX}px, 0, 0)`;
+                if(Math.abs(diff) < 5) return;
+                
+                // Impedisce lo swipe se si sta scorrendo la lista (scroll verticale o orizzontale ampio)
+                if(Math.abs(diff) > 10) {
+                    currentSwipe = Math.max(-100, Math.min(0, diff));
+                    item.style.setProperty('--swipe', `${currentSwipe}px`);
+                }
             }, {passive: true});
 
             item.addEventListener('touchend', () => {
-                if (currentX < -40) {
-                    item.style.transform = `translate3d(-80px, 0, 0)`;
-                } else {
-                    item.style.transform = `translate3d(0, 0, 0)`;
-                    if (!isDragging) loadFav(f); // Solo se è un click vero
+                item.classList.add('returning');
+                if (currentSwipe < -70) {
+                    deleteFav(f.id);
+                } else if (currentSwipe > -10 && currentSwipe <= 0) {
+                    loadFav(f);
                 }
+                currentSwipe = 0;
+                item.style.setProperty('--swipe', `0px`);
             });
-            list.appendChild(wrapper);
+            list.appendChild(wrap);
         });
     }
 
@@ -215,8 +227,7 @@
 
     function deleteFav(id) { 
         state.favs = state.favs.filter(x => x.id !== id); 
-        renderFavs(); 
-        softTic(100);
+        renderFavs(); softTic(100);
     }
 
     function saveFav() { 
