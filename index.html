@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Chef Academy 2026 - Magnetic & Fluid</title>
+  <title>Chef Academy 2026 - Swipe & Fluid</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -12,17 +12,6 @@
     
     .header-box { position: relative; z-index: 50; background: #0f172a; padding: 1.8rem 1.5rem; color: white; border-radius: 0 0 3rem 3rem; }
     .liquid-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--p-level); background: linear-gradient(0deg, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0) 100%); z-index: 1; pointer-events: none; transition: height 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
-
-    /* CESTINO GLASS ELEGANTE */
-    #drop-delete { 
-        position: fixed; bottom: 0; width: 100%; height: 160px; 
-        background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-        z-index: 999999; transform: translate3d(0, 100%, 0); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    #drop-delete.show { transform: translate3d(0, 0, 0); }
-    #drop-delete.active-drop { background: rgba(239, 68, 68, 0.08); }
 
     #tool-modal { position: fixed; inset: 0; background: rgba(15,23,42,0.9); z-index: 1000000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
 
@@ -35,17 +24,27 @@
 
     .food-card { background: white; padding: 1.2rem; border-radius: 2.2rem; text-align: center; border: 1px solid #f1f5f9; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     .food-card.active { border-color: var(--accent); background: #fffbeb; transform: scale(0.95); }
+
+    /* SWIPE DELETE SYSTEM */
+    .fav-wrapper { position: relative; min-width: 80px; height: 90px; overflow: hidden; border-radius: 1.5rem; }
+    .fav-item { 
+        position: relative; z-index: 2; background: white; width: 100%; height: 100%; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        border: 1px solid #f1f5f9; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 1.5rem;
+    }
+    .del-btn { 
+        position: absolute; top: 0; right: 0; width: 100%; height: 100%; 
+        background: #ef4444; color: white; display: flex; align-items: center; justify-content: flex-end;
+        padding-right: 20px; font-weight: 800; font-size: 10px; text-transform: uppercase;
+        border-radius: 1.5rem; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+    }
+    .fav-wrapper.swiped .del-btn { pointer-events: auto; opacity: 1; }
     
-    /* GHOST FLUIDO */
-    .drag-ghost { position: fixed !important; pointer-events: none; z-index: 2000000 !important; will-change: transform; transition: transform 0.1s linear; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body onclick="unlockAudio()">
-
-  <div id="drop-delete">
-    <div class="text-2xl opacity-40 mb-2">🗑️</div>
-    <span class="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-400">Rilascia</span>
-  </div>
 
   <div id="tool-modal" onclick="closeModal()">
       <div id="modal-list" class="w-full flex flex-col items-center"></div>
@@ -70,7 +69,7 @@
       </div>
 
       <main class="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-          <div id="favs-list" class="flex gap-4 overflow-x-auto pb-4 no-scrollbar min-h-[90px] items-center"></div>
+          <div id="favs-list" class="flex gap-4 overflow-x-auto pb-4 no-scrollbar min-h-[100px] items-center"></div>
           <div class="grid grid-cols-3 gap-4" id="grid"></div>
       </main>
 
@@ -116,31 +115,18 @@
             if(!isD) return;
             let rawX = e.touches[0].clientX - sX;
             if(rawX > 0) rawX = 0;
-            
-            let rawG = Math.abs(Math.round(rawX / 26.5)); // Step del righello
+            let rawG = Math.abs(Math.round(rawX / 26.5));
             let tw = db[state.food].w[state.tool];
-            
-            // LOGICA MAGNETICA (SNAP)
             let nearestSnap = Math.round(rawG / tw) * tw;
-            if(Math.abs(rawG - nearestSnap) < 4) { // Raggio magnetico
+            if(Math.abs(rawG - nearestSnap) < 4) {
                 state.g = nearestSnap;
                 curX = -(nearestSnap * 26.5);
-                if(lastSnap !== nearestSnap) {
-                    softTic(3000, 0.1);
-                    navigator.vibrate?.(10);
-                    lastSnap = nearestSnap;
-                }
-            } else {
-                state.g = rawG;
-                curX = rawX;
-                lastSnap = -1;
-            }
-            
+                if(lastSnap !== nearestSnap) { softTic(3000, 0.1); lastSnap = nearestSnap; }
+            } else { state.g = rawG; curX = rawX; lastSnap = -1; }
             requestAnimationFrame(update);
         }, {passive: true});
         window.addEventListener('touchend', () => isD = false);
         
-        // Popola Grid e Modal (già ottimizzati)
         Object.keys(db).forEach(k => {
             let d = document.createElement('div'); d.className = "food-card"; d.id = "f-"+k;
             d.innerHTML = `<span class="text-3xl block mb-2">${db[k].e}</span><span class="text-[7px] font-bold uppercase opacity-30 tracking-widest">${k}</span>`;
@@ -164,11 +150,8 @@
         document.getElementById('kcal').innerText = Math.round(f.k * state.g / 100) + " Calories";
         document.getElementById('track').style.transform = `translate3d(${curX}px, 0, 0)`;
         document.documentElement.style.setProperty('--p-level', (u%1*100)+'%');
-        
         document.querySelectorAll('.food-card').forEach(c => c.classList.remove('active'));
         document.getElementById('f-'+state.food).classList.add('active');
-
-        // Aggiorna tacche magnetiche visive
         document.querySelectorAll('.tack').forEach(t => t.classList.remove('snap-point'));
         for(let i=0; i<=500; i+=tw) {
             let el = document.getElementById('tack-'+i);
@@ -178,38 +161,59 @@
 
     function renderFavs() {
         const list = document.getElementById('favs-list');
-        const trash = document.getElementById('drop-delete');
         list.innerHTML = '';
         state.favs.forEach(f => {
-            let d = document.createElement('div'); d.className = "fav-item";
-            d.innerHTML = `<span class="text-2xl block">${f.emoji}</span><span class="text-[9px] font-bold text-slate-400">${f.g}g</span>`;
+            const wrapper = document.createElement('div');
+            wrapper.className = "fav-wrapper";
             
-            let ghost, isDragging = false;
-            d.addEventListener('touchstart', (e) => { unlockAudio(); }, {passive: true});
-            d.addEventListener('touchmove', (e) => {
-                if(!isDragging) { 
-                    isDragging = true; trash.classList.add('show');
-                    ghost = d.cloneNode(true); ghost.className = "fav-item drag-ghost";
-                    document.body.appendChild(ghost);
-                    d.style.opacity = "0.1";
-                }
-                // GPU ACCELERATED DRAG
-                ghost.style.transform = `translate3d(${e.touches[0].clientX - 40}px, ${e.touches[0].clientY - 40}px, 0) scale(1.1)`;
-                trash.classList.toggle('active-drop', e.touches[0].clientY > window.innerHeight - 160);
-            }, {passive: false});
+            wrapper.innerHTML = `
+                <div class="del-btn" onclick="deleteFav(${f.id})">Elimina</div>
+                <div class="fav-item" id="item-${f.id}">
+                    <span class="text-2xl block">${f.emoji}</span>
+                    <span class="text-[9px] font-bold text-slate-400">${f.g}g</span>
+                </div>
+            `;
 
-            d.addEventListener('touchend', (e) => {
-                trash.classList.remove('show', 'active-drop');
-                if(ghost) ghost.remove(); d.style.opacity = "1";
-                if(!isDragging) {
-                    state.food = f.foodKey; state.g = f.g; curX = -(f.g * 26.5); update(); softTic(1000);
-                } else if(e.changedTouches[0].clientY > window.innerHeight - 160) {
-                    state.favs = state.favs.filter(x => x.id !== f.id); renderFavs(); softTic(100);
+            const item = wrapper.querySelector('.fav-item');
+            let startX = 0, currentSwipe = 0;
+
+            item.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; unlockAudio(); }, {passive: true});
+            item.addEventListener('touchmove', (e) => {
+                let diff = e.touches[0].clientX - startX;
+                // Impedisce lo swipe a destra, permette solo a sinistra (max -70px)
+                currentSwipe = Math.max(-70, Math.min(0, diff));
+                item.style.transform = `translate3d(${currentSwipe}px, 0, 0)`;
+                wrapper.classList.toggle('swiped', currentSwipe < -40);
+            }, {passive: true});
+
+            item.addEventListener('touchend', () => {
+                if (currentSwipe < -40) {
+                    currentSwipe = -70; // Blocca in posizione aperta
+                } else {
+                    currentSwipe = 0; // Torna indietro
+                    // Se è un semplice tocco (non swipe), carica il preferito
+                    if (Math.abs(currentSwipe) < 5) {
+                        state.food = f.foodKey; state.g = f.g; curX = -(f.g * 26.5); update(); softTic(1000);
+                    }
                 }
-                isDragging = false;
+                item.style.transform = `translate3d(${currentSwipe}px, 0, 0)`;
             });
-            list.appendChild(d);
+
+            // Gestione click per caricare (se non è swippato)
+            item.onclick = () => {
+                if(currentSwipe === 0) {
+                    state.food = f.foodKey; state.g = f.g; curX = -(f.g * 26.5); update(); softTic(1000);
+                }
+            };
+
+            list.appendChild(wrapper);
         });
+    }
+
+    function deleteFav(id) {
+        state.favs = state.favs.filter(x => x.id !== id);
+        renderFavs();
+        softTic(100);
     }
 
     function saveFav() { if(state.g > 0) { state.favs.unshift({ id: Date.now(), g: state.g, foodKey: state.food, emoji: db[state.food].e }); renderFavs(); softTic(2000); } }
