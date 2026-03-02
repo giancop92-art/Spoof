@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Chef Academy 2026 - Precision Slim</title>
+  <title>Chef Academy 2026 - Precision Centered</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet" />
   <style>
@@ -13,7 +13,6 @@
     .header-box { position: relative; z-index: 50; background: #0f172a; padding: 1.5rem; border-radius: 0 0 2.5rem 2.5rem; }
     .liquid-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--p-level); background: linear-gradient(0deg, rgba(251,191,36,0.08) 0%, rgba(251,191,36,0) 100%); z-index: 1; pointer-events: none; transition: height 0.4s ease-out; }
 
-    /* NUOVA NAVIGAZIONE ALIMENTI ORIZZONTALE */
     .food-nav { display: flex; gap: 1rem; overflow-x: auto; padding: 1rem 1.5rem; scroll-behavior: smooth; }
     .food-chip { 
         flex-shrink: 0; background: #1e293b; padding: 0.8rem 1.2rem; border-radius: 1.5rem; 
@@ -24,26 +23,26 @@
 
     #tool-modal { position: fixed; inset: 0; background: rgba(2,6,23,0.98); z-index: 1000000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
 
-    /* RULER SLIM */
     #ruler { position: relative; height: 60px; touch-action: none; }
     .track { display: flex; align-items: flex-end; position: absolute; left: 50%; height: 100%; pointer-events: none; }
     .tack { width: 1.5px; height: 10px; background: #334155; margin-right: 24px; flex-shrink: 0; }
     .tack.big { height: 20px; background: #64748b; }
     .tack.snap-point { background: var(--accent) !important; height: 30px !important; box-shadow: 0 0 10px var(--accent); }
 
+    /* FIX SWIPE DELETE */
     .fav-wrapper { position: relative; min-width: 140px; height: 100px; overflow: hidden; border-radius: 2rem; flex-shrink: 0; }
     .fav-item { 
         position: relative; z-index: 2; background: #1e293b; width: 100%; height: 100%; 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         border: 1px solid rgba(255,255,255,0.05); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        border-radius: 2rem;
+        border-radius: 2rem; touch-action: pan-x;
     }
     .del-btn { 
         position: absolute; top: 0; right: 0; width: 100%; height: 100%; background: #ef4444; 
         color: white; display: flex; align-items: center; justify-content: flex-end;
-        padding-right: 20px; font-weight: 800; font-size: 10px; border-radius: 2rem; z-index: 1; opacity: 0;
+        padding-right: 20px; font-weight: 800; font-size: 10px; border-radius: 2rem; z-index: 1;
+        text-transform: uppercase;
     }
-    .fav-wrapper.swiped .del-btn { opacity: 1; }
     
     .no-scrollbar::-webkit-scrollbar { display: none; }
   </style>
@@ -58,15 +57,16 @@
       <div class="header-box">
           <div class="liquid-bg" id="liquid"></div>
           <div class="relative z-10 flex justify-between items-center">
-              <div onclick="openModal(event)" class="bg-white/5 p-4 rounded-3xl border border-white/10 text-center min-w-[80px]">
+              <div onclick="openModal(event)" class="bg-white/5 p-4 rounded-3xl border border-white/10 text-center min-w-[70px]">
                   <div id="curEmoji" class="text-3xl">🥄</div>
-                  <div class="text-[7px] font-black text-amber-400 uppercase tracking-widest mt-1">Tool</div>
               </div>
-              <div class="flex-1 text-right pr-6">
-                  <div class="text-6xl font-bold tracking-tighter leading-none text-white">
-                    <span id="dosi">0</span><span class="text-amber-500">.</span><span id="decimal" class="text-3xl text-amber-500 font-medium">0</span>
-                  </div>
+
+              <div class="flex-1 flex justify-center items-baseline">
+                <span id="dosi" class="text-7xl font-bold tracking-tighter text-white">0</span>
+                <span class="text-4xl text-amber-500 font-bold">.</span>
+                <span id="decimal" class="text-4xl text-amber-500 font-medium">0</span>
               </div>
+
               <button onclick="saveFav()" class="bg-amber-500 text-slate-900 w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-75 transition-all">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 4v16m8-8H4"/></svg>
               </button>
@@ -93,11 +93,11 @@
 
 <script>
     const db = {
-        farina: { e: "🌾", k: 364, w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 } },
-        olio: { e: "🫒", k: 884, w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 } },
-        riso: { e: "🍚", k: 130, w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220 } },
-        zucchero: { e: "🍬", k: 387, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 } },
-        pasta: { e: "🍝", k: 350, w: { cucchiaio: 15, cucchiaino: 5, tazzina: 60, bicchiere: 100 } }
+        farina: { e: "🌾", w: { cucchiaio: 12, cucchiaino: 4, tazzina: 60, bicchiere: 120 } },
+        olio: { e: "🫒", w: { cucchiaio: 9, cucchiaino: 3, tazzina: 80, bicchiere: 180 } },
+        riso: { e: "🍚", w: { cucchiaio: 20, cucchiaino: 7, tazzina: 90, bicchiere: 220 } },
+        zucchero: { e: "🍬", w: { cucchiaio: 15, cucchiaino: 5, tazzina: 80, bicchiere: 180 } },
+        pasta: { e: "🍝", w: { cucchiaio: 15, cucchiaino: 5, tazzina: 60, bicchiere: 100 } }
     };
     const tools = { cucchiaio: '🥄', cucchiaino: '🍴', tazzina: '☕', bicchiere: '🥃' };
     let state = { food: 'farina', tool: 'cucchiaio', g: 0, favs: [] };
@@ -123,8 +123,6 @@
             if(rawX > 0) rawX = 0;
             let rawG = Math.abs(Math.round(rawX / 24)); 
             let tw = db[state.food].w[state.tool];
-            
-            // Logica Magnetica + Mezzi punti (0.5)
             let halfStep = tw / 2;
             let nearestSnap = Math.round(rawG / halfStep) * halfStep;
             
@@ -137,7 +135,6 @@
         }, {passive: true});
         window.addEventListener('touchend', () => isD = false);
         
-        // Inizializza Navigazione Ingredienti
         const nav = document.getElementById('food-nav');
         Object.keys(db).forEach(k => {
             let chip = document.createElement('div');
@@ -159,19 +156,14 @@
 
     function update() {
         const f = db[state.food], tw = f.w[state.tool], u = state.g / tw;
-        
-        // Aggiorna numero e decimale (0 o 5)
         document.getElementById('dosi').innerText = Math.floor(u);
         document.getElementById('decimal').innerText = (u % 1 === 0) ? '0' : '5';
-        
         document.getElementById('grams').innerText = state.g;
         document.getElementById('curEmoji').innerText = tools[state.tool];
         document.getElementById('track').style.transform = `translate3d(${curX}px, 0, 0)`;
         document.documentElement.style.setProperty('--p-level', (u%1*100)+'%');
-        
         document.querySelectorAll('.food-chip').forEach(c => c.classList.remove('active'));
         document.getElementById('f-'+state.food).classList.add('active');
-        
         document.querySelectorAll('.tack').forEach(t => t.classList.remove('snap-point'));
         for(let i=0; i<=500; i+=tw/2) {
             let el = document.getElementById('tack-'+i);
@@ -186,19 +178,31 @@
             const wrapper = document.createElement('div');
             wrapper.className = "fav-wrapper";
             wrapper.innerHTML = `
-                <div class="del-btn" onclick="deleteFav(${f.id})">Rimuovi</div>
-                <div class="fav-item" onclick="loadFav(${JSON.stringify(f).replace(/"/g, '&quot;')})">
+                <div class="del-btn" onclick="deleteFav(${f.id})">Elimina</div>
+                <div class="fav-item" id="fav-${f.id}">
                     <span class="text-3xl">${f.emoji}</span>
                     <span class="text-[12px] font-extrabold text-white">${f.g}g</span>
                 </div>
             `;
-            // Logica swipe semplice
-            let startX = 0;
-            wrapper.querySelector('.fav-item').addEventListener('touchstart', e => startX = e.touches[0].clientX);
-            wrapper.querySelector('.fav-item').addEventListener('touchmove', e => {
+            
+            const item = wrapper.querySelector('.fav-item');
+            let startX = 0, currentX = 0, isDragging = false;
+
+            item.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = false; }, {passive: true});
+            item.addEventListener('touchmove', e => {
                 let diff = e.touches[0].clientX - startX;
-                if(diff < -40) wrapper.classList.add('swiped');
-                if(diff > 40) wrapper.classList.remove('swiped');
+                if (Math.abs(diff) > 10) isDragging = true;
+                currentX = Math.max(-80, Math.min(0, diff));
+                item.style.transform = `translate3d(${currentX}px, 0, 0)`;
+            }, {passive: true});
+
+            item.addEventListener('touchend', () => {
+                if (currentX < -40) {
+                    item.style.transform = `translate3d(-80px, 0, 0)`;
+                } else {
+                    item.style.transform = `translate3d(0, 0, 0)`;
+                    if (!isDragging) loadFav(f); // Solo se è un click vero
+                }
             });
             list.appendChild(wrapper);
         });
@@ -209,7 +213,12 @@
         curX = -(f.g * 24); update(); softTic(1000); 
     }
 
-    function deleteFav(id) { state.favs = state.favs.filter(x => x.id !== id); renderFavs(); }
+    function deleteFav(id) { 
+        state.favs = state.favs.filter(x => x.id !== id); 
+        renderFavs(); 
+        softTic(100);
+    }
+
     function saveFav() { 
         if(state.g > 0) { 
             state.favs.unshift({ id: Date.now(), g: state.g, foodKey: state.food, toolKey: state.tool, emoji: db[state.food].e }); 
